@@ -34,14 +34,22 @@
   - [x] 타이포그래피 설정
 - [x] Supabase 데이터베이스 마이그레이션 파일 준비
   - [x] `db.sql` 파일 생성 완료 (모든 테이블, 뷰, 트리거 포함)
+  - [x] `verify_database.sql` 검증 스크립트 생성 완료
+  - [x] 검증 가이드 문서 생성 완료 (`docs/VERIFY_DATABASE.md`)
+  - [x] 마이그레이션 적용 가이드 생성 완료 (`docs/MIGRATION_APPLY_GUIDE.md`)
   - [ ] `db.sql` 파일을 Supabase에 적용 (수동 작업 필요)
-  - [ ] 테이블 생성 확인 (users, posts, likes, comments, follows)
-  - [ ] Views 및 Triggers 확인
+    - 📖 [적용 가이드](./MIGRATION_APPLY_GUIDE.md) 참고
+  - [ ] 테이블 생성 확인 (users, posts, likes, comments, follows) - 검증 스크립트 사용
+    - `verify_database.sql` 실행하여 자동 검증
+  - [ ] Views 및 Triggers 확인 - 검증 스크립트 사용
+    - `verify_database.sql` 실행하여 자동 검증
   - 📖 [마이그레이션 가이드](./setup-migration-guide.md) 참고
+  - 📖 [검증 가이드](./VERIFY_DATABASE.md) 참고
 - [x] Supabase Storage 버킷 설정 파일 준비
-  - [x] `setup_posts_storage.sql` 파일 생성 완료
+  - [x] `setup_posts_storage.sql` 파일 생성 완료 (정책 중복 방지 포함)
+  - [x] 업로드 정책 설정 완료 (SELECT, INSERT, DELETE, UPDATE 정책 5개)
+  - [x] 검증 쿼리 포함
   - [ ] `posts` 버킷 생성 (공개 읽기) - Supabase Dashboard에서 적용 필요
-  - [ ] 업로드 정책 설정 확인
   - 📖 [마이그레이션 가이드](./setup-migration-guide.md) 참고
 - [x] TypeScript 타입 정의
   - [x] `lib/types.ts` 파일 생성

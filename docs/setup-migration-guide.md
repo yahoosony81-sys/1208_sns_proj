@@ -4,6 +4,8 @@
 
 ## 1. 데이터베이스 마이그레이션 적용
 
+> 📖 **상세 가이드**: [MIGRATION_APPLY_GUIDE.md](./MIGRATION_APPLY_GUIDE.md) - 단계별 적용 및 검증 가이드
+
 ### 1.1 Supabase Dashboard에서 마이그레이션 적용
 
 1. [Supabase Dashboard](https://supabase.com/dashboard)에 로그인
@@ -14,6 +16,17 @@
 6. SQL Editor에 붙여넣기
 7. **Run** 버튼 클릭하여 실행
 8. 성공 메시지 확인 (`Success. No rows returned` 또는 유사한 메시지)
+
+### 1.1.1 자동 검증 (권장)
+
+마이그레이션 적용 후 즉시 검증 스크립트를 실행하세요:
+
+1. SQL Editor에서 **New query** 버튼 클릭
+2. `supabase/migrations/verify_database.sql` 파일 내용 복사
+3. SQL Editor에 붙여넣기 후 **Run** 클릭
+4. 모든 항목이 ✅로 표시되면 성공
+
+> 📖 **상세 검증 가이드**: [VERIFY_DATABASE.md](./VERIFY_DATABASE.md)
 
 ### 1.2 생성된 테이블 확인
 
