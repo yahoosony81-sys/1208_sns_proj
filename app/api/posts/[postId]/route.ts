@@ -18,7 +18,7 @@ import { auth } from '@clerk/nextjs/server';
 import { createClient } from '@/lib/supabase/server';
 import { getServiceRoleClient } from '@/lib/supabase/service-role';
 import { getErrorMessage, getSupabaseErrorMessage, logError } from '@/lib/errors';
-import type { PostWithUser, CommentWithUser } from '@/lib/types';
+import type { PostWithUser, CommentWithUser, User } from '@/lib/types';
 
 const STORAGE_BUCKET = 'posts';
 
@@ -135,21 +135,32 @@ export async function GET(
       // 댓글 조회 실패해도 게시물은 반환
     }
 
+    // Helper function to extract user from comment data
+    const extractUser = (userData: unknown): User | null => {
+      if (!userData) return null;
+      if (Array.isArray(userData)) {
+        return userData[0] || null;
+      }
+      if (typeof userData === 'object' && userData !== null && 'id' in userData) {
+        return userData as User;
+      }
+      return null;
+    };
+
     // CommentWithUser 타입으로 변환
     const comments: CommentWithUser[] =
-      commentsData?.map((comment) => ({
-        id: comment.id,
-        post_id: comment.post_id,
-        user_id: Array.isArray(comment.user)
-          ? comment.user[0]?.id || ''
-          : comment.user?.id || '',
-        content: comment.content,
-        created_at: comment.created_at,
-        updated_at: comment.updated_at,
-        user: Array.isArray(comment.user)
-          ? comment.user[0]
-          : comment.user,
-      })) || [];
+      commentsData?.map((comment) => {
+        const user = extractUser(comment.user);
+        return {
+          id: comment.id,
+          post_id: comment.post_id,
+          user_id: user?.id || '',
+          content: comment.content,
+          created_at: comment.created_at,
+          updated_at: comment.updated_at,
+          user: user || { id: '', clerk_id: '', name: '', created_at: '' },
+        };
+      }) || [];
 
     // PostWithUser 타입으로 변환
     const postWithUser: PostWithUser = {

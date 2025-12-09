@@ -22,7 +22,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { createClient } from '@/lib/supabase/server';
 import { getErrorMessage, getSupabaseErrorMessage, logError } from '@/lib/errors';
-import type { PostWithUser, CommentWithUser } from '@/lib/types';
+import type { PostWithUser, CommentWithUser, User } from '@/lib/types';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -151,6 +151,18 @@ export async function GET(request: NextRequest) {
       // 댓글 조회 실패해도 게시물은 반환
     }
 
+    // Helper function to extract user from comment data
+    const extractUser = (userData: unknown): User | null => {
+      if (!userData) return null;
+      if (Array.isArray(userData)) {
+        return userData[0] || null;
+      }
+      if (typeof userData === 'object' && userData !== null && 'id' in userData) {
+        return userData as User;
+      }
+      return null;
+    };
+
     // 게시물별 댓글 그룹화 (최신 2개만)
     const commentsByPost = new Map<string, Array<typeof commentsData[0]>>();
     commentsData?.forEach((comment) => {
@@ -173,15 +185,18 @@ export async function GET(request: NextRequest) {
         likes_count: stat?.likes_count || 0,
         comments_count: stat?.comments_count || 0,
         is_liked: userLikes.includes(post.id),
-        preview_comments: previewComments.map((comment): CommentWithUser => ({
-          id: comment.id,
-          post_id: comment.post_id,
-          user_id: Array.isArray(comment.user) ? comment.user[0]?.id || '' : comment.user?.id || '',
-          content: comment.content,
-          created_at: comment.created_at,
-          updated_at: comment.updated_at,
-          user: Array.isArray(comment.user) ? comment.user[0] : comment.user,
-        })),
+        preview_comments: previewComments.map((comment): CommentWithUser => {
+          const user = extractUser(comment.user);
+          return {
+            id: comment.id,
+            post_id: comment.post_id,
+            user_id: user?.id || '',
+            content: comment.content,
+            created_at: comment.created_at,
+            updated_at: comment.updated_at,
+            user: user || { id: '', clerk_id: '', name: '', created_at: '' },
+          };
+        }),
       };
     });
 
