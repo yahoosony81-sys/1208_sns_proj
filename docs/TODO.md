@@ -189,14 +189,28 @@
 
 ## 7. 게시물 상세 모달
 
-- [ ] `components/post/PostModal.tsx`
-  - [ ] Desktop: 모달 형식 (이미지 50% + 댓글 50%)
-  - [ ] Mobile: 전체 페이지로 전환
-  - [ ] 닫기 버튼 (✕)
-  - [ ] 이전/다음 게시물 네비게이션 (Desktop)
-- [ ] PostCard 클릭 시 PostModal 열기
-  - [ ] 게시물 상세 정보 로드
-  - [ ] 댓글 전체 목록 표시
+- [x] `app/api/posts/[postId]/route.ts`
+  - [x] GET: 단일 게시물 상세 정보 조회
+  - [x] 게시물 정보, 통계, 전체 댓글 목록 반환
+- [x] `components/post/PostModal.tsx`
+  - [x] Desktop: 모달 형식 (이미지 50% + 댓글 50%)
+  - [x] Mobile: 전체 페이지로 전환
+  - [x] 닫기 버튼 (✕)
+  - [x] 이전/다음 게시물 네비게이션 (Desktop)
+  - [x] 좋아요 기능 (PostCard와 동일한 로직)
+  - [x] 댓글 전체 목록 표시 (CommentList 재사용)
+  - [x] 댓글 작성/삭제 (CommentForm 재사용)
+  - [x] 로딩 상태 (Skeleton UI)
+  - [x] 에러 처리
+  - [x] 키보드 지원 (ESC, ← → 화살표)
+- [x] PostCard 클릭 시 PostModal 열기
+  - [x] 이미지 클릭 시 모달 열기 (더블탭 좋아요 유지)
+  - [x] 댓글 아이콘 클릭 시 모달 열기
+  - [x] "댓글 모두 보기" 링크 클릭 시 모달 열기
+  - [x] 게시물 상세 정보 로드
+  - [x] 댓글 전체 목록 표시
+- [x] PostFeed 수정
+  - [x] feedPosts를 PostCard에 전달 (이전/다음 게시물 네비게이션용)
 
 ## 8. 프로필 페이지
 

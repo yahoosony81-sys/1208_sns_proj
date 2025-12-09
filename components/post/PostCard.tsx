@@ -24,6 +24,7 @@ import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal } from 'lucide-rea
 import type { PostWithUser, CommentWithUser } from '@/lib/types';
 import CommentForm from '@/components/comment/CommentForm';
 import CommentList from '@/components/comment/CommentList';
+import PostModal from '@/components/post/PostModal';
 
 /**
  * 시간을 상대적 형식으로 변환 (예: "3시간 전")
@@ -63,10 +64,14 @@ function formatTimeAgo(dateString: string): string {
 
 interface PostCardProps {
   post: PostWithUser;
+  feedPosts?: PostWithUser[]; // 이전/다음 게시물 네비게이션용 (선택사항)
 }
 
-export default function PostCard({ post }: PostCardProps) {
+export default function PostCard({ post, feedPosts = [] }: PostCardProps) {
   const timeAgo = formatTimeAgo(post.created_at);
+
+  // 모달 상태 관리
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // 좋아요 상태 관리
   const [isLiked, setIsLiked] = useState(post.is_liked);
@@ -83,6 +88,7 @@ export default function PostCard({ post }: PostCardProps) {
 
   // 더블탭 감지를 위한 타이머
   const lastTapRef = useRef<number>(0);
+  const clickTimerRef = useRef<NodeJS.Timeout | null>(null);
   const imageRef = useRef<HTMLDivElement>(null);
 
   // 캡션 처리: 2줄 초과 시 "... 더 보기" 표시
@@ -134,13 +140,17 @@ export default function PostCard({ post }: PostCardProps) {
     }
   }, [isLiked, likesCount, post.id, isLikeLoading]);
 
-  // 더블탭 좋아요 처리
-  const handleDoubleTap = useCallback(() => {
+  // 이미지 클릭 처리 (단일 클릭: 모달 열기, 더블탭: 좋아요)
+  const handleImageClick = useCallback(() => {
     const now = Date.now();
     const DOUBLE_TAP_DELAY = 300; // 300ms 내 두 번 탭하면 더블탭으로 간주
 
     if (lastTapRef.current && now - lastTapRef.current < DOUBLE_TAP_DELAY) {
-      // 더블탭 감지
+      // 더블탭 감지 - 좋아요 처리
+      if (clickTimerRef.current) {
+        clearTimeout(clickTimerRef.current);
+        clickTimerRef.current = null;
+      }
       if (!isLiked) {
         handleLike();
         // 큰 하트 애니메이션 표시
@@ -151,7 +161,27 @@ export default function PostCard({ post }: PostCardProps) {
       }
       lastTapRef.current = 0;
     } else {
+      // 단일 클릭 - 모달 열기 (약간의 지연을 두어 더블탭과 구분)
       lastTapRef.current = now;
+      clickTimerRef.current = setTimeout(() => {
+        setIsModalOpen(true);
+        clickTimerRef.current = null;
+      }, DOUBLE_TAP_DELAY);
+    }
+  }, [isLiked, handleLike]);
+
+  // 더블탭 이벤트 핸들러 (명시적 더블탭)
+  const handleDoubleClick = useCallback(() => {
+    if (clickTimerRef.current) {
+      clearTimeout(clickTimerRef.current);
+      clickTimerRef.current = null;
+    }
+    if (!isLiked) {
+      handleLike();
+      setShowDoubleTapHeart(true);
+      setTimeout(() => {
+        setShowDoubleTapHeart(false);
+      }, 1000);
     }
   }, [isLiked, handleLike]);
 
@@ -205,8 +235,8 @@ export default function PostCard({ post }: PostCardProps) {
       <div
         ref={imageRef}
         className="relative w-full aspect-square bg-gray-100 cursor-pointer select-none"
-        onDoubleClick={handleDoubleTap}
-        onClick={handleDoubleTap}
+        onDoubleClick={handleDoubleClick}
+        onClick={handleImageClick}
       >
         <Image
           src={post.image_url}
@@ -247,13 +277,13 @@ export default function PostCard({ post }: PostCardProps) {
               } ${isAnimating ? 'scale-[1.3]' : 'scale-100'}`}
             />
           </button>
-          <Link
-            href={`/post/${post.id}`}
+          <button
+            onClick={() => setIsModalOpen(true)}
             className="hover:opacity-70 transition-opacity"
             aria-label="댓글"
           >
             <MessageCircle className="w-6 h-6 text-instagram-text-primary" />
-          </Link>
+          </button>
           <button
             className="hover:opacity-70 transition-opacity"
             aria-label="공유"
@@ -302,12 +332,12 @@ export default function PostCard({ post }: PostCardProps) {
         {commentsCount > 0 && (
           <div className="space-y-1">
             {commentsCount > 2 && (
-              <Link
-                href={`/post/${post.id}`}
-                className="text-sm text-instagram-text-secondary hover:opacity-70 transition-opacity block"
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="text-sm text-instagram-text-secondary hover:opacity-70 transition-opacity block text-left"
               >
                 댓글 {commentsCount}개 모두 보기
-              </Link>
+              </button>
             )}
             {/* 댓글 목록 (CommentList 사용) */}
             {previewComments.length > 0 && (
@@ -323,6 +353,15 @@ export default function PostCard({ post }: PostCardProps) {
 
       {/* 댓글 입력 폼 */}
       <CommentForm postId={post.id} onSuccess={handleCommentSuccess} />
+
+      {/* 게시물 상세 모달 */}
+      <PostModal
+        postId={post.id}
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        initialPost={post}
+        feedPosts={feedPosts}
+      />
     </article>
   );
 }

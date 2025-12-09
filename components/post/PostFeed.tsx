@@ -116,7 +116,7 @@ export default function PostFeed() {
     <div className="w-full">
       {/* 게시물 목록 */}
       {posts.map((post) => (
-        <PostCard key={post.id} post={post} />
+        <PostCard key={post.id} post={post} feedPosts={posts} />
       ))}
 
       {/* 로딩 스켈레톤 */}
