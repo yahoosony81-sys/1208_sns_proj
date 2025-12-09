@@ -48,7 +48,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     // users 테이블에서 추가 정보 조회
     const { data: user, error: userError } = await supabase
       .from('users')
-      .select('id, clerk_id, name, created_at')
+      .select('id, clerk_id, name, profile_image_url, created_at')
       .eq('id', userId)
       .single();
 
