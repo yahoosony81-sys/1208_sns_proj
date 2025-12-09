@@ -161,6 +161,21 @@
   main {
     @apply max-w-7xl mx-auto pt-16 px-4;
   }
+  
+  /* 키보드 포커스 스타일 개선 */
+  *:focus-visible {
+    @apply outline-2 outline-offset-2 outline-instagram-blue;
+  }
+  
+  /* 버튼 포커스 스타일 */
+  button:focus-visible {
+    @apply ring-2 ring-offset-2 ring-instagram-blue;
+  }
+  
+  /* 링크 포커스 스타일 */
+  a:focus-visible {
+    @apply outline-2 outline-offset-2 outline-instagram-blue rounded;
+  }
 }
 
 /* 더블탭 큰 하트 애니메이션 */

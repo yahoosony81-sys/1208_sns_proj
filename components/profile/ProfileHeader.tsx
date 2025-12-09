@@ -62,7 +62,7 @@ function ProfileHeader({
       <div className="hidden md:flex items-start gap-8 px-4 py-8">
         {/* 프로필 이미지 */}
         <div className="flex-shrink-0">
-          <div className="relative w-[150px] h-[150px] rounded-full overflow-hidden bg-gray-200">
+          <div className="relative w-[150px] h-[150px] rounded-full overflow-hidden bg-gray-200" role="img" aria-label={`${user.name}의 프로필 이미지`}>
             {/* 프로필 이미지 - 추후 사용자 프로필 이미지 추가 시 사용 */}
             <div className="w-full h-full bg-gradient-to-br from-purple-400 to-pink-400" />
           </div>
@@ -94,19 +94,25 @@ function ProfileHeader({
 
           {/* 통계 */}
           <div className="flex items-center gap-8 mb-4">
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1" role="status" aria-label={`게시물 ${stats.posts_count.toLocaleString()}개`}>
               <span className="text-sm font-semibold text-instagram-text-primary">
                 {stats.posts_count.toLocaleString()}
               </span>
               <span className="text-sm text-instagram-text-primary">게시물</span>
             </div>
-            <button className="flex items-center gap-1 hover:opacity-70 transition-opacity">
+            <button 
+              className="flex items-center gap-1 hover:opacity-70 transition-opacity"
+              aria-label={`팔로워 ${stats.followers_count.toLocaleString()}명`}
+            >
               <span className="text-sm font-semibold text-instagram-text-primary">
                 {stats.followers_count.toLocaleString()}
               </span>
               <span className="text-sm text-instagram-text-primary">팔로워</span>
             </button>
-            <button className="flex items-center gap-1 hover:opacity-70 transition-opacity">
+            <button 
+              className="flex items-center gap-1 hover:opacity-70 transition-opacity"
+              aria-label={`팔로잉 ${stats.following_count.toLocaleString()}명`}
+            >
               <span className="text-sm font-semibold text-instagram-text-primary">
                 {stats.following_count.toLocaleString()}
               </span>
@@ -129,7 +135,7 @@ function ProfileHeader({
         <div className="flex items-center gap-4">
           {/* 프로필 이미지 */}
           <div className="flex-shrink-0">
-            <div className="relative w-[90px] h-[90px] rounded-full overflow-hidden bg-gray-200">
+            <div className="relative w-[90px] h-[90px] rounded-full overflow-hidden bg-gray-200" role="img" aria-label={`${user.name}의 프로필 이미지`}>
               {/* 프로필 이미지 - 추후 사용자 프로필 이미지 추가 시 사용 */}
               <div className="w-full h-full bg-gradient-to-br from-purple-400 to-pink-400" />
             </div>
@@ -137,19 +143,25 @@ function ProfileHeader({
 
           {/* 통계 */}
           <div className="flex-1 flex items-center justify-around">
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center" role="status" aria-label={`게시물 ${stats.posts_count.toLocaleString()}개`}>
               <span className="text-base font-semibold text-instagram-text-primary">
                 {stats.posts_count.toLocaleString()}
               </span>
               <span className="text-xs text-instagram-text-primary">게시물</span>
             </div>
-            <button className="flex flex-col items-center hover:opacity-70 transition-opacity">
+            <button 
+              className="flex flex-col items-center hover:opacity-70 transition-opacity"
+              aria-label={`팔로워 ${stats.followers_count.toLocaleString()}명`}
+            >
               <span className="text-base font-semibold text-instagram-text-primary">
                 {stats.followers_count.toLocaleString()}
               </span>
               <span className="text-xs text-instagram-text-primary">팔로워</span>
             </button>
-            <button className="flex flex-col items-center hover:opacity-70 transition-opacity">
+            <button 
+              className="flex flex-col items-center hover:opacity-70 transition-opacity"
+              aria-label={`팔로잉 ${stats.following_count.toLocaleString()}명`}
+            >
               <span className="text-base font-semibold text-instagram-text-primary">
                 {stats.following_count.toLocaleString()}
               </span>

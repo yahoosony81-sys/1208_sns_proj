@@ -21,6 +21,12 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
   title: "SaaS 템플릿",
   description: "Next.js + Clerk + Supabase 보일러플레이트",
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+  },
 };
 
 export default function RootLayout({

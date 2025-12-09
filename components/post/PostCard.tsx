@@ -363,7 +363,7 @@ function PostCard({ post, feedPosts = [] }: PostCardProps) {
       >
         <Image
           src={post.image_url}
-          alt={post.caption || '게시물 이미지'}
+          alt={post.caption ? `${post.user.name}의 게시물: ${post.caption.substring(0, 100)}` : `${post.user.name}의 게시물 이미지`}
           fill
           className="object-cover"
           sizes="(max-width: 768px) 100vw, 630px"
@@ -389,8 +389,14 @@ function PostCard({ post, feedPosts = [] }: PostCardProps) {
         <div className="flex items-center gap-4">
           <button
             onClick={handleLike}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleLike();
+              }
+            }}
             disabled={isLikeLoading}
-            className="hover:opacity-70 transition-opacity disabled:opacity-50"
+            className="hover:opacity-70 transition-opacity disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-instagram-blue"
             aria-label={isLiked ? '좋아요 취소' : '좋아요'}
           >
             <Heart
@@ -445,7 +451,10 @@ function PostCard({ post, feedPosts = [] }: PostCardProps) {
             </Link>
             <span className="ml-2">{displayCaption}</span>
             {showMore && (
-              <button className="ml-1 text-instagram-text-secondary hover:opacity-70">
+              <button 
+                className="ml-1 text-instagram-text-secondary hover:opacity-70"
+                aria-label="캡션 전체 보기"
+              >
                 더 보기
               </button>
             )}

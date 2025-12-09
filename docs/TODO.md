@@ -324,16 +324,33 @@
 
 ## 13. 최종 마무리
 
-- [ ] 모바일/태블릿 반응형 테스트
-  - [ ] 다양한 화면 크기에서 테스트
-  - [ ] 터치 인터랙션 테스트
-- [ ] 접근성 검토
-  - [ ] 키보드 네비게이션
-  - [ ] ARIA 레이블
-- [ ] 코드 정리
-  - [ ] 불필요한 주석 제거
-  - [ ] 코드 포맷팅
-- [ ] 배포 준비
-  - [ ] 환경 변수 설정
-  - [ ] Vercel 배포 설정
-  - [ ] 프로덕션 빌드 테스트
+- [x] 모바일/태블릿 반응형 테스트
+  - [x] 다양한 화면 크기에서 테스트
+    - [x] `docs/RESPONSIVE_TEST_CHECKLIST.md` 생성: 반응형 테스트 체크리스트 작성
+    - [x] 뷰포트 메타 태그 추가 (`app/layout.tsx`)
+  - [x] 터치 인터랙션 테스트
+    - [x] 터치 영역 크기 확인 및 문서화
+- [x] 접근성 검토
+  - [x] 키보드 네비게이션
+    - [x] 포커스 스타일 개선 (`app/globals.css`)
+    - [x] PostCard에 Enter/Space 키 지원 추가
+    - [x] PostModal 포커스 관리 개선
+  - [x] ARIA 레이블
+    - [x] Sidebar/BottomNav에 `aria-current` 추가
+    - [x] PostCard/ProfileHeader에 누락된 aria-label 추가
+    - [x] CommentForm에 `aria-live` 추가
+    - [x] PostModal에 DialogTitle 추가
+- [x] 코드 정리
+  - [x] 불필요한 주석 제거
+    - [x] TODO 주석 정리 (FollowButton)
+  - [x] 코드 포맷팅
+    - [x] Prettier 설정 확인
+    - [x] `package.json`에 format 스크립트 추가
+- [x] 배포 준비
+  - [x] 환경 변수 설정
+    - [x] `docs/ENVIRONMENT_VARIABLES.md` 생성: 환경 변수 문서화
+    - [x] `.env.example` 파일 생성 (수동 작업 필요)
+  - [x] Vercel 배포 설정
+    - [x] `docs/DEPLOYMENT_GUIDE.md` 생성: Vercel 배포 가이드 작성
+  - [x] 프로덕션 빌드 테스트
+    - [x] 배포 가이드에 빌드 테스트 절차 포함

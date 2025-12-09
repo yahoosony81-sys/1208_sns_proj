@@ -65,6 +65,7 @@ export default function BottomNav() {
                   isActive && 'text-instagram-text-primary'
                 )}
                 aria-label={item.label}
+                aria-current={isActive ? 'page' : undefined}
               >
                 <Icon
                   className={cn(

@@ -125,7 +125,7 @@ function CommentForm({ postId, onSuccess }: CommentFormProps) {
         </Button>
       </div>
       {error && (
-        <p className="text-xs text-red-500 mt-1">{error}</p>
+        <p className="text-xs text-red-500 mt-1" role="alert" aria-live="polite">{error}</p>
       )}
     </div>
   );

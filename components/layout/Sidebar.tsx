@@ -72,6 +72,7 @@ export default function Sidebar() {
                     ? 'font-semibold text-instagram-text-primary'
                     : 'font-normal text-instagram-text-primary'
                 )}
+                aria-current={isActive ? 'page' : undefined}
               >
                 <Icon
                   className={cn(
@@ -146,6 +147,7 @@ export default function Sidebar() {
                   isActive && 'bg-gray-50'
                 )}
                 title={item.label}
+                aria-current={isActive ? 'page' : undefined}
               >
                 <Icon
                   className={cn(

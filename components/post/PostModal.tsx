@@ -34,6 +34,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
 } from '@/components/ui/dialog';
 import CommentList from '@/components/comment/CommentList';
 import CommentForm from '@/components/comment/CommentForm';
@@ -438,7 +439,13 @@ export default function PostModal({
   // Desktop 레이아웃 (모달 형식)
   const desktopContent = (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[90vw] max-w-[1200px] w-full h-[90vh] p-0 flex flex-col md:flex-row overflow-hidden">
+      <DialogContent 
+        className="sm:max-w-[90vw] max-w-[1200px] w-full h-[90vh] p-0 flex flex-col md:flex-row overflow-hidden"
+        aria-labelledby="post-modal-title"
+      >
+        <DialogTitle id="post-modal-title" className="sr-only">
+          {post ? `${post.user.name}의 게시물` : '게시물 상세'}
+        </DialogTitle>
         {isLoading ? (
           <div className="flex items-center justify-center w-full h-full bg-white">
             <div className="w-full h-full flex flex-col md:flex-row">

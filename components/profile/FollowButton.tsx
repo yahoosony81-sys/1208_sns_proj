@@ -63,7 +63,6 @@ export default function FollowButton({
         // 실패 시 롤백
         setIsFollowing(!newState);
         console.error('Follow toggle error:', data.error);
-        // TODO: 토스트 메시지 표시 (추후 구현)
         return;
       }
 
@@ -78,7 +77,6 @@ export default function FollowButton({
       // 실패 시 롤백
       setIsFollowing(!newState);
       console.error('Follow toggle error:', error);
-      // TODO: 토스트 메시지 표시 (추후 구현)
     } finally {
       setIsPending(false);
     }
