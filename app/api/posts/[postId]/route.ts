@@ -1,22 +1,25 @@
 /**
  * @file route.ts
- * @description 단일 게시물 조회 API 라우트
+ * @description 단일 게시물 조회 및 삭제 API 라우트
  *
  * GET /api/posts/[postId]: 단일 게시물 상세 정보 조회
- * - 게시물 정보 (이미지, 캡션, 작성자, 시간)
- * - 좋아요 수, 댓글 수, 좋아요 상태
- * - 전체 댓글 목록 (시간 역순 정렬)
- * - 사용자 정보 포함
+ * DELETE /api/posts/[postId]: 게시물 삭제
+ * - 본인만 삭제 가능 (인증 검증)
+ * - Supabase Storage에서 이미지 삭제
  *
  * @dependencies
  * - @/lib/supabase/server: Supabase 서버 클라이언트
+ * - @/lib/supabase/service-role: Supabase Service Role 클라이언트 (Storage 삭제용)
  * - @/lib/types: TypeScript 타입
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { createClient } from '@/lib/supabase/server';
+import { getServiceRoleClient } from '@/lib/supabase/service-role';
 import type { PostWithUser, CommentWithUser } from '@/lib/types';
+
+const STORAGE_BUCKET = 'posts';
 
 export const dynamic = 'force-dynamic';
 
@@ -160,6 +163,136 @@ export async function GET(
       post: postWithUser,
       comments, // 별도로 댓글 목록도 반환
     });
+  } catch (error) {
+    console.error('Unexpected error:', error);
+    return NextResponse.json(
+      { error: '서버 오류가 발생했습니다.' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * DELETE /api/posts/[postId]
+ * 게시물 삭제
+ *
+ * Path Parameters:
+ * - postId: 게시물 ID (UUID)
+ *
+ * 본인 게시물만 삭제 가능하며, Storage 이미지도 함께 삭제됩니다.
+ */
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ postId: string }> }
+) {
+  try {
+    const { postId } = await params;
+
+    if (!postId) {
+      return NextResponse.json(
+        { error: '게시물 ID가 필요합니다.' },
+        { status: 400 }
+      );
+    }
+
+    const { userId: clerkUserId } = await auth();
+
+    if (!clerkUserId) {
+      return NextResponse.json(
+        { error: '인증이 필요합니다.' },
+        { status: 401 }
+      );
+    }
+
+    const supabase = await createClient();
+
+    // Clerk user ID로 users 테이블에서 현재 사용자 찾기
+    const { data: currentUser, error: userError } = await supabase
+      .from('users')
+      .select('id, clerk_id')
+      .eq('clerk_id', clerkUserId)
+      .single();
+
+    if (userError || !currentUser) {
+      console.error('Error finding user:', userError);
+      return NextResponse.json(
+        { error: '사용자를 찾을 수 없습니다.' },
+        { status: 404 }
+      );
+    }
+
+    // 게시물 조회 (작성자 확인용)
+    const { data: post, error: postError } = await supabase
+      .from('posts')
+      .select('id, user_id, image_url')
+      .eq('id', postId)
+      .single();
+
+    if (postError || !post) {
+      return NextResponse.json(
+        { error: '게시물을 찾을 수 없습니다.' },
+        { status: 404 }
+      );
+    }
+
+    // 본인 게시물인지 확인
+    if (post.user_id !== currentUser.id) {
+      return NextResponse.json(
+        { error: '본인이 작성한 게시물만 삭제할 수 있습니다.' },
+        { status: 403 }
+      );
+    }
+
+    // Storage에서 이미지 파일 경로 추출
+    // image_url 형식: https://[project].supabase.co/storage/v1/object/public/posts/{clerk_id}/{filename}
+    let filePath: string | null = null;
+    try {
+      const url = new URL(post.image_url);
+      const pathParts = url.pathname.split('/');
+      const postsIndex = pathParts.indexOf('posts');
+      if (postsIndex >= 0 && postsIndex < pathParts.length - 1) {
+        // posts 이후의 경로 추출 (clerk_id/filename)
+        filePath = pathParts.slice(postsIndex + 1).join('/');
+      }
+    } catch (urlError) {
+      console.error('Error parsing image URL:', urlError);
+      // URL 파싱 실패해도 게시물은 삭제 진행
+    }
+
+    // Supabase Storage에서 이미지 삭제 (Service Role 클라이언트 사용)
+    if (filePath) {
+      try {
+        const serviceRoleClient = getServiceRoleClient();
+        const { error: storageError } = await serviceRoleClient.storage
+          .from(STORAGE_BUCKET)
+          .remove([filePath]);
+
+        if (storageError) {
+          console.error('Error deleting image from storage:', storageError);
+          // Storage 삭제 실패해도 게시물은 삭제 진행 (에러 로그만 기록)
+        }
+      } catch (storageError) {
+        console.error('Error deleting image from storage:', storageError);
+        // Storage 삭제 실패해도 게시물은 삭제 진행
+      }
+    }
+
+    // posts 테이블에서 게시물 삭제 (CASCADE로 관련 데이터 자동 삭제)
+    const { error: deleteError } = await supabase
+      .from('posts')
+      .delete()
+      .eq('id', postId)
+      .eq('user_id', currentUser.id);
+
+    if (deleteError) {
+      console.error('Error deleting post:', deleteError);
+      return NextResponse.json(
+        { error: '게시물을 삭제하는데 실패했습니다.' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     console.error('Unexpected error:', error);
     return NextResponse.json(

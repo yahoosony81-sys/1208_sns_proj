@@ -234,16 +234,6 @@ export default function PostModal({
     setComments((prev) => prev.filter((c) => c.id !== commentId));
   }, []);
 
-  // 현재 postId를 상태로 관리 (이전/다음 게시물 네비게이션용)
-  const [currentPostId, setCurrentPostId] = useState(postId);
-
-  // postId가 변경되면 게시물 다시 로드
-  useEffect(() => {
-    if (currentPostId !== postId) {
-      setCurrentPostId(postId);
-    }
-  }, [postId]);
-
   // 이전 게시물로 이동
   const handlePreviousPost = useCallback(() => {
     if (previousPost && !isLoading) {

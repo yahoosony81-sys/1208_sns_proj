@@ -17,10 +17,12 @@
 
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useUser } from '@clerk/nextjs';
+import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Trash2 } from 'lucide-react';
 import type { PostWithUser, CommentWithUser } from '@/lib/types';
 import CommentForm from '@/components/comment/CommentForm';
 import CommentList from '@/components/comment/CommentList';
@@ -69,9 +71,16 @@ interface PostCardProps {
 
 export default function PostCard({ post, feedPosts = [] }: PostCardProps) {
   const timeAgo = formatTimeAgo(post.created_at);
+  const router = useRouter();
+  const { user } = useUser();
 
   // 모달 상태 관리
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // 삭제 관련 상태 관리
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // 좋아요 상태 관리
   const [isLiked, setIsLiked] = useState(post.is_liked);
@@ -90,6 +99,26 @@ export default function PostCard({ post, feedPosts = [] }: PostCardProps) {
   const lastTapRef = useRef<number>(0);
   const clickTimerRef = useRef<NodeJS.Timeout | null>(null);
   const imageRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // 본인 게시물인지 확인
+  const isOwnPost = user?.id === post.user.clerk_id;
+
+  // 메뉴 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    if (isMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [isMenuOpen]);
 
   // 캡션 처리: 2줄 초과 시 "... 더 보기" 표시
   const captionLines = post.caption?.split('\n') || [];
@@ -204,6 +233,36 @@ export default function PostCard({ post, feedPosts = [] }: PostCardProps) {
     setPreviewComments((prev) => prev.filter((c) => c.id !== commentId));
   }, []);
 
+  // 게시물 삭제 핸들러
+  const handleDelete = useCallback(async () => {
+    if (isDeleting || !isOwnPost) return;
+
+    setIsDeleting(true);
+
+    try {
+      const response = await fetch(`/api/posts/${post.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        console.error('Delete error:', data.error);
+        alert('게시물 삭제에 실패했습니다.');
+        return;
+      }
+
+      // 삭제 성공 시 페이지 새로고침
+      router.refresh();
+    } catch (error) {
+      console.error('Delete error:', error);
+      alert('게시물 삭제에 실패했습니다.');
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteDialogOpen(false);
+      setIsMenuOpen(false);
+    }
+  }, [post.id, isDeleting, isOwnPost, router]);
+
   return (
     <article className="bg-white border border-instagram-border rounded-lg mb-6 overflow-hidden">
       {/* 헤더 (60px) */}
@@ -223,13 +282,68 @@ export default function PostCard({ post, feedPosts = [] }: PostCardProps) {
             <span className="text-xs text-instagram-text-secondary">{timeAgo}</span>
           </div>
         </Link>
-        <button
-          className="p-1 hover:opacity-70 transition-opacity"
-          aria-label="더보기"
-        >
-          <MoreHorizontal className="w-5 h-5 text-instagram-text-primary" />
-        </button>
+        {/* 메뉴 버튼 (본인 게시물만 삭제 옵션 표시) */}
+        {isOwnPost && (
+          <div className="relative" ref={menuRef}>
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="p-1 hover:opacity-70 transition-opacity"
+              aria-label="더보기"
+            >
+              <MoreHorizontal className="w-5 h-5 text-instagram-text-primary" />
+            </button>
+
+            {/* 드롭다운 메뉴 */}
+            {isMenuOpen && (
+              <div className="absolute right-0 top-8 w-48 bg-white border border-instagram-border rounded-lg shadow-lg z-50">
+                <button
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    setIsDeleteDialogOpen(true);
+                  }}
+                  className="w-full px-4 py-3 text-left text-sm text-red-500 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  삭제
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </header>
+
+      {/* 삭제 확인 다이얼로그 */}
+      {isDeleteDialogOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
+            <h3 className="text-lg font-semibold text-instagram-text-primary mb-2">
+              게시물 삭제
+            </h3>
+            <p className="text-sm text-instagram-text-secondary mb-6">
+              이 게시물을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setIsDeleteDialogOpen(false);
+                  setIsMenuOpen(false);
+                }}
+                disabled={isDeleting}
+                className="px-4 py-2 text-sm font-semibold text-instagram-text-primary hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-50"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="px-4 py-2 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {isDeleting ? '삭제 중...' : '삭제'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 이미지 영역 (1:1 정사각형) */}
       <div
