@@ -189,6 +189,7 @@ export async function GET(request: NextRequest) {
         is_liked: userLikes.includes(post.id),
         preview_comments: previewComments.map((comment): CommentWithUser => {
           const user = extractUser(comment.user);
+          const defaultUser: User = { id: '', clerk_id: '', name: '', profile_image_url: null, created_at: '' };
           return {
             id: comment.id,
             post_id: comment.post_id,
@@ -196,7 +197,7 @@ export async function GET(request: NextRequest) {
             content: comment.content,
             created_at: comment.created_at,
             updated_at: comment.updated_at,
-            user: user || { id: '', clerk_id: '', name: '', created_at: '' },
+            user: user || defaultUser,
           };
         }),
       };

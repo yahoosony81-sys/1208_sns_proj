@@ -153,6 +153,7 @@ export async function GET(
     const comments: CommentWithUser[] =
       commentsData?.map((comment) => {
         const user = extractUser(comment.user);
+        const defaultUser: User = { id: '', clerk_id: '', name: '', profile_image_url: null, created_at: '' };
         return {
           id: comment.id,
           post_id: comment.post_id,
@@ -160,7 +161,7 @@ export async function GET(
           content: comment.content,
           created_at: comment.created_at,
           updated_at: comment.updated_at,
-          user: user || { id: '', clerk_id: '', name: '', created_at: '' },
+          user: user || defaultUser,
         };
       }) || [];
 
