@@ -174,16 +174,29 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         user: User | User[] | null;
       };
 
+      // Helper function to extract user from comment data
+      const extractUser = (userData: unknown): User | null => {
+        if (!userData) return null;
+        if (Array.isArray(userData)) {
+          return userData[0] || null;
+        }
+        if (typeof userData === 'object' && userData !== null && 'id' in userData) {
+          return userData as User;
+        }
+        return null;
+      };
+
       const commentsByPost = new Map<string, CommentWithUserData[]>();
       if (commentsData) {
         for (const comment of commentsData) {
+          const user = extractUser(comment.user);
           const typedComment: CommentWithUserData = {
             id: comment.id,
             post_id: comment.post_id,
             content: comment.content,
             created_at: comment.created_at,
             updated_at: comment.updated_at,
-            user: comment.user as User | User[] | null,
+            user: user,
           };
           
           if (!commentsByPost.has(typedComment.post_id)) {
