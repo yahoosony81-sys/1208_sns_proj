@@ -21,7 +21,9 @@ import { useState, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal } from 'lucide-react';
-import type { PostWithUser } from '@/lib/types';
+import type { PostWithUser, CommentWithUser } from '@/lib/types';
+import CommentForm from '@/components/comment/CommentForm';
+import CommentList from '@/components/comment/CommentList';
 
 /**
  * 시간을 상대적 형식으로 변환 (예: "3시간 전")
@@ -72,6 +74,12 @@ export default function PostCard({ post }: PostCardProps) {
   const [isAnimating, setIsAnimating] = useState(false);
   const [showDoubleTapHeart, setShowDoubleTapHeart] = useState(false);
   const [isLikeLoading, setIsLikeLoading] = useState(false);
+
+  // 댓글 상태 관리
+  const [commentsCount, setCommentsCount] = useState(post.comments_count);
+  const [previewComments, setPreviewComments] = useState<CommentWithUser[]>(
+    post.preview_comments || []
+  );
 
   // 더블탭 감지를 위한 타이머
   const lastTapRef = useRef<number>(0);
@@ -146,6 +154,25 @@ export default function PostCard({ post }: PostCardProps) {
       lastTapRef.current = now;
     }
   }, [isLiked, handleLike]);
+
+  // 댓글 작성 성공 핸들러
+  const handleCommentSuccess = useCallback((comment: CommentWithUser) => {
+    // 댓글 수 증가
+    setCommentsCount((prev) => prev + 1);
+    // preview_comments 업데이트 (최신 댓글 추가, 최대 2개만 유지)
+    setPreviewComments((prev) => {
+      const newComments = [comment, ...prev];
+      return newComments.slice(0, 2);
+    });
+  }, []);
+
+  // 댓글 삭제 핸들러
+  const handleCommentDelete = useCallback((commentId: string) => {
+    // 댓글 수 감소
+    setCommentsCount((prev) => Math.max(0, prev - 1));
+    // preview_comments에서 제거
+    setPreviewComments((prev) => prev.filter((c) => c.id !== commentId));
+  }, []);
 
   return (
     <article className="bg-white border border-instagram-border rounded-lg mb-6 overflow-hidden">
@@ -272,35 +299,30 @@ export default function PostCard({ post }: PostCardProps) {
         )}
 
         {/* 댓글 미리보기 (최신 2개) */}
-        {post.comments_count > 0 && (
+        {commentsCount > 0 && (
           <div className="space-y-1">
-            {post.comments_count > 2 && (
+            {commentsCount > 2 && (
               <Link
                 href={`/post/${post.id}`}
                 className="text-sm text-instagram-text-secondary hover:opacity-70 transition-opacity block"
               >
-                댓글 {post.comments_count}개 모두 보기
+                댓글 {commentsCount}개 모두 보기
               </Link>
             )}
-            {/* 댓글 미리보기 2개 표시 */}
-            {post.preview_comments && post.preview_comments.length > 0 && (
-              <div className="space-y-1">
-                {post.preview_comments.map((comment) => (
-                  <div key={comment.id} className="text-sm text-instagram-text-primary">
-                    <Link
-                      href={`/profile/${comment.user.id}`}
-                      className="font-semibold hover:opacity-70 transition-opacity"
-                    >
-                      {comment.user.name}
-                    </Link>
-                    <span className="ml-2">{comment.content}</span>
-                  </div>
-                ))}
-              </div>
+            {/* 댓글 목록 (CommentList 사용) */}
+            {previewComments.length > 0 && (
+              <CommentList
+                comments={previewComments}
+                onDelete={handleCommentDelete}
+                showDeleteButton={true}
+              />
             )}
           </div>
         )}
       </div>
+
+      {/* 댓글 입력 폼 */}
+      <CommentForm postId={post.id} onSuccess={handleCommentSuccess} />
     </article>
   );
 }

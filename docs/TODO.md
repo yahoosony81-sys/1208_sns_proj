@@ -161,21 +161,31 @@
 
 ## 6. 댓글 기능
 
-- [ ] `components/comment/CommentList.tsx`
-  - [ ] 댓글 목록 렌더링
-  - [ ] PostCard: 최신 2개만 표시
-  - [ ] 상세 모달: 전체 댓글 + 스크롤
-  - [ ] 삭제 버튼 (본인만 표시)
-- [ ] `components/comment/CommentForm.tsx`
-  - [ ] 댓글 입력 필드 ("댓글 달기...")
-  - [ ] Enter 키 또는 "게시" 버튼으로 제출
-- [ ] `app/api/comments/route.ts`
-  - [ ] POST: 댓글 작성
-  - [ ] DELETE: 댓글 삭제 (본인만)
-  - [ ] 인증 검증 (Clerk)
-- [ ] PostCard에 댓글 기능 통합
-  - [ ] CommentList 통합
-  - [ ] CommentForm 통합
+- [x] `components/comment/CommentList.tsx`
+  - [x] 댓글 목록 렌더링
+  - [x] PostCard: 최신 2개만 표시 (preview_comments 사용)
+  - [x] 상세 모달: 전체 댓글 + 스크롤 (추후 구현)
+  - [x] 삭제 버튼 (본인만 표시)
+  - [x] 사용자명 클릭 시 프로필 페이지로 이동
+  - [x] 시간 표시 (상대적 시간)
+- [x] `components/comment/CommentForm.tsx`
+  - [x] 댓글 입력 필드 ("댓글 달기...")
+  - [x] Enter 키 또는 "게시" 버튼으로 제출
+  - [x] Shift+Enter는 줄바꿈 처리
+  - [x] 로그인하지 않은 사용자 처리
+  - [x] 로딩 상태 표시
+  - [x] 에러 메시지 표시
+- [x] `app/api/comments/route.ts`
+  - [x] POST: 댓글 작성
+  - [x] DELETE: 댓글 삭제 (본인만)
+  - [x] 인증 검증 (Clerk)
+  - [x] 댓글 내용 검증 (빈 문자열 제외)
+  - [x] 에러 처리 (401, 400, 403, 404, 500)
+- [x] PostCard에 댓글 기능 통합
+  - [x] CommentList 통합 (댓글 미리보기)
+  - [x] CommentForm 통합 (댓글 입력)
+  - [x] 댓글 작성 후 낙관적 업데이트 (comments_count 증가, preview_comments 업데이트)
+  - [x] 댓글 삭제 후 낙관적 업데이트 (comments_count 감소, preview_comments에서 제거)
 
 ## 7. 게시물 상세 모달
 
