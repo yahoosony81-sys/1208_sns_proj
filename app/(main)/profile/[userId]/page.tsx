@@ -57,13 +57,23 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
       notFound();
     }
 
+    // 타입 안전성을 위한 타입 단언
+    type UserWithProfileImage = {
+      id: string;
+      clerk_id: string;
+      name: string;
+      profile_image_url: string | null;
+      created_at: string;
+    };
+    const typedUser = user as UserWithProfileImage;
+
     // 현재 사용자 정보 조회 (본인 프로필 확인 및 팔로우 관계 확인용)
     const { userId: clerkUserId } = await auth();
     let isOwnProfile = false;
     let isFollowing = false;
 
     if (clerkUserId) {
-      isOwnProfile = user.clerk_id === clerkUserId;
+      isOwnProfile = typedUser.clerk_id === clerkUserId;
 
       if (!isOwnProfile) {
         const { data: currentUser } = await supabase
@@ -242,11 +252,11 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
     // User 타입으로 변환
     const userInfo: User = {
-      id: user.id,
-      clerk_id: user.clerk_id,
-      name: user.name,
-      profile_image_url: user.profile_image_url || null,
-      created_at: user.created_at,
+      id: typedUser.id,
+      clerk_id: typedUser.clerk_id,
+      name: typedUser.name,
+      profile_image_url: typedUser.profile_image_url || null,
+      created_at: typedUser.created_at,
     };
 
     return (
