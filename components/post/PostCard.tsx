@@ -280,8 +280,17 @@ function PostCard({ post, feedPosts = [] }: PostCardProps) {
           className="flex items-center gap-3 hover:opacity-70 transition-opacity"
         >
           <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gray-200">
-            {/* 프로필 이미지 - 추후 사용자 프로필 이미지 추가 시 사용 */}
-            <div className="w-full h-full bg-gradient-to-br from-purple-400 to-pink-400" />
+            {post.user.profile_image_url ? (
+              <Image
+                src={post.user.profile_image_url}
+                alt={`${post.user.name}의 프로필 이미지`}
+                fill
+                className="object-cover"
+                sizes="32px"
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-purple-400 to-pink-400" />
+            )}
           </div>
           <div className="flex flex-col">
             <span className="text-sm font-semibold text-instagram-text-primary">

@@ -21,6 +21,7 @@ export interface User {
   id: string; // UUID
   clerk_id: string; // Clerk User ID
   name: string;
+  profile_image_url: string | null; // 프로필 이미지 URL (Supabase Storage)
   created_at: string; // ISO 8601 timestamp
 }
 

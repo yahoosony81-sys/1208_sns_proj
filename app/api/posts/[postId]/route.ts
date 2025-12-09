@@ -57,6 +57,7 @@ export async function GET(
           id,
           clerk_id,
           name,
+          profile_image_url,
           created_at
         )
       `
@@ -123,6 +124,7 @@ export async function GET(
           id,
           clerk_id,
           name,
+          profile_image_url,
           created_at
         )
       `

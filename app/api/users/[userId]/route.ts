@@ -113,6 +113,7 @@ export async function GET(
         id: user.id,
         clerk_id: user.clerk_id,
         name: user.name,
+        profile_image_url: user.profile_image_url,
         created_at: user.created_at,
         posts_count: userStats.posts_count || 0,
         followers_count: userStats.followers_count || 0,
@@ -191,11 +192,25 @@ export async function PUT(
       );
     }
 
-    // 요청 본문 파싱
-    const body = await request.json();
-    const { name } = body;
+    // FormData 파싱 (이미지 업로드 지원)
+    const contentType = request.headers.get('content-type') || '';
+    let name: string | undefined;
+    let profileImage: File | null = null;
 
-    // 유효성 검사
+    if (contentType.includes('multipart/form-data')) {
+      const formData = await request.formData();
+      name = formData.get('name') as string | undefined;
+      profileImage = formData.get('profileImage') as File | null;
+    } else {
+      // JSON 요청 처리 (기존 호환성)
+      const body = await request.json();
+      name = body.name;
+    }
+
+    // 업데이트할 데이터 준비
+    const updateData: { name?: string; profile_image_url?: string } = {};
+
+    // 이름 유효성 검사 및 업데이트
     if (name !== undefined) {
       if (typeof name !== 'string') {
         return NextResponse.json(
@@ -219,34 +234,118 @@ export async function PUT(
         );
       }
 
-      // 사용자 정보 업데이트
-      const { data: updatedUser, error: updateError } = await supabase
+      updateData.name = trimmedName;
+    }
+
+    // 프로필 이미지 업로드 처리
+    if (profileImage) {
+      const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+      const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+      const STORAGE_BUCKET = process.env.NEXT_PUBLIC_STORAGE_BUCKET || 'posts';
+
+      // 파일 크기 검증
+      if (profileImage.size > MAX_FILE_SIZE) {
+        return NextResponse.json(
+          { error: getErrorMessage(413, '파일 크기는 5MB 이하여야 합니다.') },
+          { status: 413 }
+        );
+      }
+
+      // MIME 타입 검증
+      if (!ALLOWED_MIME_TYPES.includes(profileImage.type)) {
+        return NextResponse.json(
+          { error: getErrorMessage(415, 'JPEG, PNG, WebP 파일만 업로드 가능합니다.') },
+          { status: 415 }
+        );
+      }
+
+      // 기존 프로필 이미지 삭제 (있는 경우)
+      const { data: currentUser } = await supabase
         .from('users')
-        .update({ name: trimmedName })
+        .select('profile_image_url')
         .eq('id', userId)
-        .select('id, clerk_id, name, created_at')
         .single();
 
-      if (updateError) {
-        logError(updateError, 'PUT /api/users/[userId] - Update user');
-        const errorMessage = getSupabaseErrorMessage(updateError);
+      if (currentUser?.profile_image_url) {
+        // 기존 이미지 경로 추출 (URL에서 경로만 추출)
+        try {
+          const oldImageUrl = currentUser.profile_image_url;
+          const urlParts = oldImageUrl.split('/storage/v1/object/public/');
+          if (urlParts.length > 1) {
+            const pathParts = urlParts[1].split('/');
+            if (pathParts.length >= 2) {
+              const oldFilePath = `${pathParts[0]}/${pathParts.slice(1).join('/')}`;
+              await supabase.storage.from(STORAGE_BUCKET).remove([oldFilePath]);
+            }
+          }
+        } catch (err) {
+          // 기존 이미지 삭제 실패는 무시 (로그만 남김)
+          logError(err, 'PUT /api/users/[userId] - Delete old profile image');
+        }
+      }
+
+      // 파일 확장자 추출
+      const fileExt = profileImage.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const timestamp = Date.now();
+      const randomString = Math.random().toString(36).substring(7);
+      const fileName = `profile-${timestamp}-${randomString}.${fileExt}`;
+      const filePath = `${clerkUserId}/profile/${fileName}`;
+
+      // Supabase Storage에 이미지 업로드
+      const fileBuffer = await profileImage.arrayBuffer();
+      const { error: uploadError } = await supabase.storage
+        .from(STORAGE_BUCKET)
+        .upload(filePath, fileBuffer, {
+          contentType: profileImage.type,
+          cacheControl: '3600',
+          upsert: false,
+        });
+
+      if (uploadError) {
+        logError(uploadError, 'PUT /api/users/[userId] - Upload profile image');
+        const errorMessage = getSupabaseErrorMessage(uploadError);
         return NextResponse.json(
-          { error: errorMessage },
+          { error: errorMessage || '프로필 이미지 업로드에 실패했습니다.' },
           { status: 500 }
         );
       }
 
-      return NextResponse.json({
-        user: updatedUser,
-        message: '프로필이 성공적으로 업데이트되었습니다.',
-      });
+      // 공개 URL 생성
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(filePath);
+      updateData.profile_image_url = publicUrl;
     }
 
     // 업데이트할 필드가 없는 경우
-    return NextResponse.json(
-      { error: getErrorMessage(400, '업데이트할 정보가 없습니다.') },
-      { status: 400 }
-    );
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json(
+        { error: getErrorMessage(400, '업데이트할 정보가 없습니다.') },
+        { status: 400 }
+      );
+    }
+
+    // 사용자 정보 업데이트
+    const { data: updatedUser, error: updateError } = await supabase
+      .from('users')
+      .update(updateData)
+      .eq('id', userId)
+      .select('id, clerk_id, name, profile_image_url, created_at')
+      .single();
+
+    if (updateError) {
+      logError(updateError, 'PUT /api/users/[userId] - Update user');
+      const errorMessage = getSupabaseErrorMessage(updateError);
+      return NextResponse.json(
+        { error: errorMessage },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({
+      user: updatedUser,
+      message: '프로필이 성공적으로 업데이트되었습니다.',
+    });
   } catch (error) {
     logError(error, 'PUT /api/users/[userId]');
     return NextResponse.json(

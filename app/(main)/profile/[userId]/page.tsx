@@ -95,6 +95,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           id,
           clerk_id,
           name,
+          profile_image_url,
           created_at
         )
       `
@@ -158,6 +159,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
             id,
             clerk_id,
             name,
+            profile_image_url,
             created_at
           )
         `

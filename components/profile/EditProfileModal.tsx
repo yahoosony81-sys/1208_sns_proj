@@ -20,8 +20,10 @@
 
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { Camera, X } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -42,6 +44,8 @@ interface EditProfileModalProps {
 }
 
 const MAX_NAME_LENGTH = 30;
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 export default function EditProfileModal({
   open,
@@ -50,7 +54,12 @@ export default function EditProfileModal({
   onSuccess,
 }: EditProfileModalProps) {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState(user.name);
+  const [profileImage, setProfileImage] = useState<File | null>(null);
+  const [profileImagePreview, setProfileImagePreview] = useState<string | null>(
+    user.profile_image_url || null
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -59,12 +68,51 @@ export default function EditProfileModal({
     (newOpen: boolean) => {
       if (newOpen) {
         setName(user.name);
+        setProfileImage(null);
+        setProfileImagePreview(user.profile_image_url || null);
         setError(null);
       }
       onOpenChange(newOpen);
     },
-    [user.name, onOpenChange]
+    [user.name, user.profile_image_url, onOpenChange]
   );
+
+  // 이미지 선택 핸들러
+  const handleImageSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // 파일 타입 검증
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      setError('JPEG, PNG, WebP 형식의 이미지만 업로드 가능합니다.');
+      return;
+    }
+
+    // 파일 크기 검증
+    if (file.size > MAX_IMAGE_SIZE) {
+      setError('이미지 크기는 5MB 이하여야 합니다.');
+      return;
+    }
+
+    setProfileImage(file);
+    setError(null);
+
+    // 미리보기 생성
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setProfileImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  }, []);
+
+  // 이미지 제거 핸들러
+  const handleImageRemove = useCallback(() => {
+    setProfileImage(null);
+    setProfileImagePreview(user.profile_image_url || null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }, [user.profile_image_url]);
 
   // 폼 제출 핸들러
   const handleSubmit = useCallback(
@@ -83,8 +131,8 @@ export default function EditProfileModal({
         return;
       }
 
-      if (trimmedName === user.name) {
-        // 변경사항이 없으면 모달만 닫기
+      // 변경사항이 없으면 모달만 닫기
+      if (trimmedName === user.name && !profileImage) {
         onOpenChange(false);
         return;
       }
@@ -93,12 +141,16 @@ export default function EditProfileModal({
       setError(null);
 
       try {
+        // FormData 생성 (이미지가 있는 경우)
+        const formData = new FormData();
+        formData.append('name', trimmedName);
+        if (profileImage) {
+          formData.append('profileImage', profileImage);
+        }
+
         const response = await fetch(`/api/users/${user.id}`, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ name: trimmedName }),
+          body: formData,
         });
 
         if (!response.ok) {
@@ -124,7 +176,7 @@ export default function EditProfileModal({
         setIsSubmitting(false);
       }
     },
-    [name, user.name, user.id, onOpenChange, router, onSuccess]
+    [name, user.name, user.id, profileImage, onOpenChange, router, onSuccess]
   );
 
   return (
@@ -167,18 +219,59 @@ export default function EditProfileModal({
             </div>
           </div>
 
-          {/* 프로필 이미지 (추후 구현) */}
+          {/* 프로필 이미지 */}
           <div className="space-y-2">
             <Label className="text-sm font-semibold text-instagram-text-primary">
               프로필 사진
             </Label>
             <div className="flex items-center gap-4">
-              <div className="relative w-16 h-16 rounded-full overflow-hidden bg-gray-200">
-                <div className="w-full h-full bg-gradient-to-br from-purple-400 to-pink-400" />
+              {/* 프로필 이미지 미리보기 */}
+              <div className="relative w-20 h-20 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
+                {profileImagePreview ? (
+                  <Image
+                    src={profileImagePreview}
+                    alt="프로필 미리보기"
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-purple-400 to-pink-400" />
+                )}
+                {profileImagePreview && (
+                  <button
+                    type="button"
+                    onClick={handleImageRemove}
+                    className="absolute top-0 right-0 w-6 h-6 bg-black/50 rounded-full flex items-center justify-center hover:bg-black/70 transition-colors"
+                    aria-label="이미지 제거"
+                  >
+                    <X className="w-4 h-4 text-white" />
+                  </button>
+                )}
               </div>
-              <div className="flex-1">
-                <p className="text-sm text-instagram-text-secondary">
-                  프로필 사진 변경 기능은 추후 추가될 예정입니다.
+
+              {/* 이미지 업로드 버튼 */}
+              <div className="flex-1 space-y-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleImageSelect}
+                  disabled={isSubmitting}
+                  className="hidden"
+                  id="profile-image-input"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isSubmitting}
+                  className="w-full text-sm font-semibold border-instagram-border hover:bg-gray-50"
+                >
+                  <Camera className="w-4 h-4 mr-2" />
+                  {profileImage ? '사진 변경' : '사진 업로드'}
+                </Button>
+                <p className="text-xs text-instagram-text-secondary">
+                  JPEG, PNG, WebP 형식, 최대 5MB
                 </p>
               </div>
             </div>
@@ -197,7 +290,10 @@ export default function EditProfileModal({
             </Button>
             <Button
               type="submit"
-              disabled={isSubmitting || name.trim() === user.name}
+              disabled={
+                isSubmitting ||
+                (name.trim() === user.name && !profileImage)
+              }
               className="px-4 py-1.5 text-sm font-semibold bg-instagram-blue hover:bg-instagram-blue/90 text-white disabled:opacity-50"
             >
               {isSubmitting ? '저장 중...' : '제출'}

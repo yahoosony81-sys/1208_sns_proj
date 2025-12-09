@@ -57,6 +57,7 @@ export async function GET(request: NextRequest) {
           id,
           clerk_id,
           name,
+          profile_image_url,
           created_at
         )
       `)
@@ -135,12 +136,13 @@ export async function GET(request: NextRequest) {
         content,
         created_at,
         updated_at,
-        user:users!comments_user_id_fkey (
-          id,
-          clerk_id,
-          name,
-          created_at
-        )
+          user:users!comments_user_id_fkey (
+            id,
+            clerk_id,
+            name,
+            profile_image_url,
+            created_at
+          )
       `
       )
       .in('post_id', postIds)

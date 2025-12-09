@@ -73,8 +73,17 @@ function ProfileHeader({
         {/* 프로필 이미지 */}
         <div className="flex-shrink-0">
           <div className="relative w-[150px] h-[150px] rounded-full overflow-hidden bg-gray-200" role="img" aria-label={`${currentUser.name}의 프로필 이미지`}>
-            {/* 프로필 이미지 - 추후 사용자 프로필 이미지 추가 시 사용 */}
-            <div className="w-full h-full bg-gradient-to-br from-purple-400 to-pink-400" />
+            {currentUser.profile_image_url ? (
+              <Image
+                src={currentUser.profile_image_url}
+                alt={`${currentUser.name}의 프로필 이미지`}
+                fill
+                className="object-cover"
+                sizes="150px"
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-purple-400 to-pink-400" />
+            )}
           </div>
         </div>
 
@@ -146,8 +155,17 @@ function ProfileHeader({
           {/* 프로필 이미지 */}
           <div className="flex-shrink-0">
             <div className="relative w-[90px] h-[90px] rounded-full overflow-hidden bg-gray-200" role="img" aria-label={`${currentUser.name}의 프로필 이미지`}>
-              {/* 프로필 이미지 - 추후 사용자 프로필 이미지 추가 시 사용 */}
-              <div className="w-full h-full bg-gradient-to-br from-purple-400 to-pink-400" />
+              {currentUser.profile_image_url ? (
+                <Image
+                  src={currentUser.profile_image_url}
+                  alt={`${currentUser.name}의 프로필 이미지`}
+                  fill
+                  className="object-cover"
+                  sizes="90px"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-purple-400 to-pink-400" />
+              )}
             </div>
           </div>
 
