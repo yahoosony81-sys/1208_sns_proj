@@ -132,3 +132,127 @@ export async function GET(
   }
 }
 
+/**
+ * PUT /api/users/[userId]
+ * 사용자 정보 업데이트
+ *
+ * Path Parameters:
+ * - userId: 사용자 ID (UUID)
+ *
+ * Request Body:
+ * - name: 사용자 이름 (선택사항, 최대 30자)
+ */
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ userId: string }> }
+) {
+  try {
+    const { userId } = await params;
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: getErrorMessage(400, '사용자 ID가 필요합니다.') },
+        { status: 400 }
+      );
+    }
+
+    // 인증 확인
+    const { userId: clerkUserId } = await auth();
+    if (!clerkUserId) {
+      return NextResponse.json(
+        { error: getErrorMessage(401) },
+        { status: 401 }
+      );
+    }
+
+    const supabase = await createClient();
+
+    // 사용자 정보 조회
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('id, clerk_id')
+      .eq('id', userId)
+      .single();
+
+    if (userError || !user) {
+      logError(userError, 'PUT /api/users/[userId] - Fetch user');
+      const errorMessage = userError ? getSupabaseErrorMessage(userError) : '사용자를 찾을 수 없습니다.';
+      return NextResponse.json(
+        { error: errorMessage },
+        { status: 404 }
+      );
+    }
+
+    // 본인 프로필인지 확인
+    if (user.clerk_id !== clerkUserId) {
+      return NextResponse.json(
+        { error: getErrorMessage(403, '본인의 프로필만 수정할 수 있습니다.') },
+        { status: 403 }
+      );
+    }
+
+    // 요청 본문 파싱
+    const body = await request.json();
+    const { name } = body;
+
+    // 유효성 검사
+    if (name !== undefined) {
+      if (typeof name !== 'string') {
+        return NextResponse.json(
+          { error: getErrorMessage(400, '이름은 문자열이어야 합니다.') },
+          { status: 400 }
+        );
+      }
+
+      const trimmedName = name.trim();
+      if (!trimmedName) {
+        return NextResponse.json(
+          { error: getErrorMessage(400, '이름을 입력해주세요.') },
+          { status: 400 }
+        );
+      }
+
+      if (trimmedName.length > 30) {
+        return NextResponse.json(
+          { error: getErrorMessage(400, '이름은 30자 이하여야 합니다.') },
+          { status: 400 }
+        );
+      }
+
+      // 사용자 정보 업데이트
+      const { data: updatedUser, error: updateError } = await supabase
+        .from('users')
+        .update({ name: trimmedName })
+        .eq('id', userId)
+        .select('id, clerk_id, name, created_at')
+        .single();
+
+      if (updateError) {
+        logError(updateError, 'PUT /api/users/[userId] - Update user');
+        const errorMessage = getSupabaseErrorMessage(updateError);
+        return NextResponse.json(
+          { error: errorMessage },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({
+        user: updatedUser,
+        message: '프로필이 성공적으로 업데이트되었습니다.',
+      });
+    }
+
+    // 업데이트할 필드가 없는 경우
+    return NextResponse.json(
+      { error: getErrorMessage(400, '업데이트할 정보가 없습니다.') },
+      { status: 400 }
+    );
+  } catch (error) {
+    logError(error, 'PUT /api/users/[userId]');
+    return NextResponse.json(
+      { error: getErrorMessage(500) },
+      { status: 500 }
+    );
+  }
+}
+

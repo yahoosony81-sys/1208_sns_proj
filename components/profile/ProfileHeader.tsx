@@ -16,9 +16,11 @@
 
 'use client';
 
-import { useState, memo } from 'react';
+import { useState, memo, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import FollowButton from '@/components/profile/FollowButton';
+import EditProfileModal from '@/components/profile/EditProfileModal';
 import type { User } from '@/lib/types';
 
 interface ProfileHeaderProps {
@@ -40,9 +42,17 @@ function ProfileHeader({
   isOwnProfile,
   isFollowing: initialIsFollowing = false,
 }: ProfileHeaderProps) {
+  const router = useRouter();
   // 팔로우 상태 및 통계를 로컬 상태로 관리 (낙관적 업데이트)
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
   const [stats, setStats] = useState(initialStats);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState(user);
+
+  // user prop이 변경되면 currentUser 업데이트
+  useEffect(() => {
+    setCurrentUser(user);
+  }, [user]);
 
   // 팔로우 상태 변경 핸들러
   const handleFollowToggle = (newState: boolean) => {
@@ -62,7 +72,7 @@ function ProfileHeader({
       <div className="hidden md:flex items-start gap-8 px-4 py-8">
         {/* 프로필 이미지 */}
         <div className="flex-shrink-0">
-          <div className="relative w-[150px] h-[150px] rounded-full overflow-hidden bg-gray-200" role="img" aria-label={`${user.name}의 프로필 이미지`}>
+          <div className="relative w-[150px] h-[150px] rounded-full overflow-hidden bg-gray-200" role="img" aria-label={`${currentUser.name}의 프로필 이미지`}>
             {/* 프로필 이미지 - 추후 사용자 프로필 이미지 추가 시 사용 */}
             <div className="w-full h-full bg-gradient-to-br from-purple-400 to-pink-400" />
           </div>
@@ -73,13 +83,13 @@ function ProfileHeader({
           {/* 사용자명 및 버튼 */}
           <div className="flex items-center gap-4 mb-4">
             <h1 className="text-2xl font-light text-instagram-text-primary">
-              {user.name}
+              {currentUser.name}
             </h1>
             {isOwnProfile ? (
               <Button
                 variant="outline"
                 className="px-4 py-1.5 text-sm font-semibold border-instagram-border hover:bg-gray-50"
-                disabled
+                onClick={() => setIsEditModalOpen(true)}
               >
                 프로필 편집
               </Button>
@@ -123,7 +133,7 @@ function ProfileHeader({
           {/* 사용자명 (모바일용, Desktop에서는 숨김) */}
           <div className="md:hidden">
             <h2 className="text-sm font-semibold text-instagram-text-primary">
-              {user.name}
+              {currentUser.name}
             </h2>
           </div>
         </div>
@@ -135,7 +145,7 @@ function ProfileHeader({
         <div className="flex items-center gap-4">
           {/* 프로필 이미지 */}
           <div className="flex-shrink-0">
-            <div className="relative w-[90px] h-[90px] rounded-full overflow-hidden bg-gray-200" role="img" aria-label={`${user.name}의 프로필 이미지`}>
+            <div className="relative w-[90px] h-[90px] rounded-full overflow-hidden bg-gray-200" role="img" aria-label={`${currentUser.name}의 프로필 이미지`}>
               {/* 프로필 이미지 - 추후 사용자 프로필 이미지 추가 시 사용 */}
               <div className="w-full h-full bg-gradient-to-br from-purple-400 to-pink-400" />
             </div>
@@ -173,13 +183,13 @@ function ProfileHeader({
         {/* 사용자명 및 버튼 */}
         <div className="space-y-2">
           <h2 className="text-sm font-semibold text-instagram-text-primary">
-            {user.name}
+            {currentUser.name}
           </h2>
           {isOwnProfile ? (
             <Button
               variant="outline"
               className="w-full px-4 py-1.5 text-sm font-semibold border-instagram-border hover:bg-gray-50"
-              disabled
+              onClick={() => setIsEditModalOpen(true)}
             >
               프로필 편집
             </Button>
@@ -193,6 +203,19 @@ function ProfileHeader({
           )}
         </div>
       </div>
+
+      {/* 프로필 편집 모달 */}
+      {isOwnProfile && (
+        <EditProfileModal
+          open={isEditModalOpen}
+          onOpenChange={setIsEditModalOpen}
+          user={currentUser}
+          onSuccess={() => {
+            // 프로필 업데이트 성공 시 페이지 새로고침하여 최신 정보 반영
+            router.refresh();
+          }}
+        />
+      )}
     </div>
   );
 }
