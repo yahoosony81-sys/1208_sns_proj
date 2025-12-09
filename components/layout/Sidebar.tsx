@@ -67,9 +67,9 @@ export default function Sidebar() {
                 href={item.href}
                 className={cn(
                   'flex items-center gap-4 px-3 py-3 rounded-lg transition-colors',
-                  'hover:bg-gray-50',
+                  'hover:bg-pink-50',
                   isActive
-                    ? 'font-semibold text-instagram-text-primary'
+                    ? 'font-semibold text-pink-500'
                     : 'font-normal text-instagram-text-primary'
                 )}
                 aria-current={isActive ? 'page' : undefined}
@@ -95,7 +95,7 @@ export default function Sidebar() {
             }}
             className={cn(
               'flex items-center gap-4 px-3 py-3 rounded-lg transition-colors',
-              'hover:bg-gray-50',
+              'hover:bg-pink-50',
               'font-normal text-instagram-text-primary',
               'w-full text-left'
             )}
@@ -109,9 +109,9 @@ export default function Sidebar() {
               href="/sign-in"
               className={cn(
                 'flex items-center gap-4 px-3 py-3 rounded-lg transition-colors',
-                'hover:bg-gray-50',
+                'hover:bg-pink-50',
                 'font-normal text-instagram-text-primary',
-                pathname === '/sign-in' && 'font-semibold'
+                pathname === '/sign-in' && 'font-semibold text-pink-500'
               )}
             >
               <User className="w-6 h-6" />
@@ -143,8 +143,8 @@ export default function Sidebar() {
                 href={item.href}
                 className={cn(
                   'flex items-center justify-center w-12 h-12 rounded-lg transition-colors',
-                  'hover:bg-gray-50',
-                  isActive && 'bg-gray-50'
+                  'hover:bg-pink-50',
+                  isActive && 'bg-pink-50'
                 )}
                 title={item.label}
                 aria-current={isActive ? 'page' : undefined}
@@ -169,7 +169,7 @@ export default function Sidebar() {
             }}
             className={cn(
               'flex items-center justify-center w-12 h-12 rounded-lg transition-colors',
-              'hover:bg-gray-50'
+              'hover:bg-pink-50'
             )}
             title="만들기"
           >
@@ -181,8 +181,8 @@ export default function Sidebar() {
               href="/sign-in"
               className={cn(
                 'flex items-center justify-center w-12 h-12 rounded-lg transition-colors',
-                'hover:bg-gray-50',
-                pathname === '/sign-in' && 'bg-gray-50'
+                'hover:bg-pink-50',
+                pathname === '/sign-in' && 'bg-pink-50'
               )}
               title="로그인"
             >
