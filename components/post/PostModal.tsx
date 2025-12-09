@@ -227,6 +227,17 @@ export default function PostModal({
     setComments((prev) => prev.filter((c) => c.id !== commentId));
   }, []);
 
+  // 이전/다음 게시물 계산 (메모이제이션)
+  const { previousPost, nextPost } = useMemo(() => {
+    const currentIndex = feedPosts.findIndex((p) => p.id === currentPostId);
+    const prev = currentIndex > 0 ? feedPosts[currentIndex - 1] : null;
+    const next =
+      currentIndex >= 0 && currentIndex < feedPosts.length - 1
+        ? feedPosts[currentIndex + 1]
+        : null;
+    return { previousPost: prev, nextPost: next };
+  }, [feedPosts, currentPostId]);
+
   // 이전 게시물로 이동
   const handlePreviousPost = useCallback(() => {
     if (previousPost && !isLoading) {
