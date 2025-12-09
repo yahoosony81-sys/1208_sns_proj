@@ -233,7 +233,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
               content: comment.content,
               created_at: comment.created_at,
               updated_at: comment.updated_at,
-              user: user || { id: '', clerk_id: '', name: '', created_at: '' },
+              user: user || { id: '', clerk_id: '', name: '', profile_image_url: null, created_at: '' },
             };
           }),
         };
@@ -245,6 +245,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
       id: user.id,
       clerk_id: user.clerk_id,
       name: user.name,
+      profile_image_url: user.profile_image_url || null,
       created_at: user.created_at,
     };
 
