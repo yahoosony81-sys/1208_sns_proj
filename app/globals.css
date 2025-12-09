@@ -178,3 +178,19 @@
     transform: scale(1);
   }
 }
+
+/* Shimmer 애니메이션 (로딩 스켈레톤용) */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@layer utilities {
+  .animate-shimmer {
+    animation: shimmer 2s linear infinite;
+  }
+}
