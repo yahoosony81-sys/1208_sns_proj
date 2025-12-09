@@ -165,16 +165,36 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         .in('post_id', postIds)
         .order('created_at', { ascending: false });
 
-      const commentsByPost = new Map<string, Array<typeof commentsData[0]>>();
-      commentsData?.forEach((comment) => {
-        if (!commentsByPost.has(comment.post_id)) {
-          commentsByPost.set(comment.post_id, []);
+      type CommentWithUserData = {
+        id: string;
+        post_id: string;
+        content: string;
+        created_at: string;
+        updated_at: string;
+        user: User | User[] | null;
+      };
+
+      const commentsByPost = new Map<string, CommentWithUserData[]>();
+      if (commentsData) {
+        for (const comment of commentsData) {
+          const typedComment: CommentWithUserData = {
+            id: comment.id,
+            post_id: comment.post_id,
+            content: comment.content,
+            created_at: comment.created_at,
+            updated_at: comment.updated_at,
+            user: comment.user as User | User[] | null,
+          };
+          
+          if (!commentsByPost.has(typedComment.post_id)) {
+            commentsByPost.set(typedComment.post_id, []);
+          }
+          const postComments = commentsByPost.get(typedComment.post_id);
+          if (postComments && postComments.length < 2) {
+            postComments.push(typedComment);
+          }
         }
-        const postComments = commentsByPost.get(comment.post_id);
-        if (postComments && postComments.length < 2) {
-          postComments.push(comment);
-        }
-      });
+      }
 
       // PostWithUser 타입으로 변환
       postsWithStats = posts.map((post) => {
@@ -186,19 +206,21 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           likes_count: stat?.likes_count || 0,
           comments_count: stat?.comments_count || 0,
           is_liked: userLikes.includes(post.id),
-          preview_comments: previewComments.map((comment): CommentWithUser => ({
-            id: comment.id,
-            post_id: comment.post_id,
-            user_id: Array.isArray(comment.user)
-              ? comment.user[0]?.id || ''
-              : comment.user?.id || '',
-            content: comment.content,
-            created_at: comment.created_at,
-            updated_at: comment.updated_at,
-            user: Array.isArray(comment.user)
-              ? comment.user[0]
-              : comment.user,
-          })),
+          preview_comments: previewComments.map((comment): CommentWithUser => {
+            const user = Array.isArray(comment.user) 
+              ? comment.user[0] 
+              : comment.user;
+            
+            return {
+              id: comment.id,
+              post_id: comment.post_id,
+              user_id: user?.id || '',
+              content: comment.content,
+              created_at: comment.created_at,
+              updated_at: comment.updated_at,
+              user: user || { id: '', clerk_id: '', name: '', created_at: '' },
+            };
+          }),
         };
       });
     }

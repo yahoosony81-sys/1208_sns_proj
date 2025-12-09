@@ -123,14 +123,13 @@ function PostCard({ post, feedPosts = [] }: PostCardProps) {
   }, [isMenuOpen]);
 
   // 캡션 처리: 2줄 초과 시 "... 더 보기" 표시 (메모이제이션)
-  const { captionLines, showMore, displayCaption } = useMemo(() => {
+  const { showMore, displayCaption } = useMemo(() => {
     const lines = post.caption?.split('\n') || [];
     const shouldShowMore = lines.length > 2 || (post.caption && post.caption.length > 100);
     const display = shouldShowMore
       ? post.caption?.substring(0, 100) + '...'
       : post.caption || '';
     return {
-      captionLines: lines,
       showMore: shouldShowMore,
       displayCaption: display,
     };

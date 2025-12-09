@@ -19,7 +19,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -101,7 +101,7 @@ export default function PostModal({
   const [comments, setComments] = useState<CommentWithUser[]>(
     initialPost?.preview_comments || []
   );
-  const [commentsCount, setCommentsCount] = useState(
+  const [, setCommentsCount] = useState(
     initialPost?.comments_count || 0
   );
 

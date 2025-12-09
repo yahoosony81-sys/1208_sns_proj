@@ -19,6 +19,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
+import Image from 'next/image';
 import { useUser } from '@clerk/nextjs';
 import { X, Upload, Image as ImageIcon } from 'lucide-react';
 import { isNetworkError } from '@/lib/api-client';
@@ -216,10 +217,12 @@ export default function CreatePostModal({
             <div className="space-y-4">
               {/* 이미지 미리보기 */}
               <div className="relative w-full aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                <img
+                <Image
                   src={previewUrl}
                   alt="미리보기"
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 600px"
                 />
                 <button
                   onClick={handleFileRemove}

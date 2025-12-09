@@ -298,7 +298,7 @@ export async function POST(request: NextRequest) {
 
     // Supabase Storage에 이미지 업로드
     const fileBuffer = await imageFile.arrayBuffer();
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from(STORAGE_BUCKET)
       .upload(filePath, fileBuffer, {
         contentType: imageFile.type,

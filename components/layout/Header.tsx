@@ -17,7 +17,6 @@
 import Link from 'next/link';
 import { useUser } from '@clerk/nextjs';
 import { Heart, Send, User } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 export default function Header() {
   const { isSignedIn } = useUser();

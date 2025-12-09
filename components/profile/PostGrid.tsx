@@ -28,18 +28,13 @@ interface PostGridProps {
   posts: PostWithUser[];
 }
 
-function PostGrid({ userId, posts }: PostGridProps) {
+function PostGrid({ posts }: PostGridProps) {
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handlePostClick = (postId: string) => {
     setSelectedPostId(postId);
     setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedPostId(null);
   };
 
   if (posts.length === 0) {
