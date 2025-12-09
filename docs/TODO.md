@@ -261,7 +261,32 @@
   - [x] `app/not-found.tsx` 생성 (커스텀 404 페이지)
   - [x] 사용자 없음 에러 처리
 
-## 9. 팔로우 기능
+## 9. 검색 기능
+
+- [x] `app/(main)/search/page.tsx`
+  - [x] 검색 입력 필드
+  - [x] 검색 결과 표시 (사용자, 게시물)
+  - [x] 탭 필터 (전체/사용자/게시물)
+  - [x] 로딩 상태 및 빈 상태 처리
+  - [x] URL 쿼리 파라미터 동기화
+- [x] `app/api/search/route.ts`
+  - [x] GET: 검색 쿼리 처리
+  - [x] 사용자 검색 (이름으로 ILIKE 검색)
+  - [x] 게시물 검색 (캡션으로 ILIKE 검색)
+  - [x] 쿼리 파라미터: q (검색어), type (all/users/posts)
+  - [x] 페이지네이션 지원 (limit 파라미터)
+  - [x] 에러 처리
+- [x] `components/search/SearchInput.tsx`
+  - [x] 검색어 입력 필드
+  - [x] 실시간 검색 (debounce 적용)
+  - [x] 검색어 초기화 버튼
+- [x] `components/search/SearchResults.tsx`
+  - [x] 사용자 검색 결과 리스트 (프로필 이미지, 이름, 프로필 링크)
+  - [x] 게시물 검색 결과 리스트 (썸네일, 캡션 미리보기)
+  - [x] 빈 결과 상태 처리
+  - [x] 로딩 상태 처리
+
+## 10. 팔로우 기능
 
 - [x] `app/api/follows/route.ts`
   - [x] POST: 팔로우 추가
@@ -288,7 +313,7 @@
   - [x] 삭제 확인 다이얼로그
   - [x] 삭제 후 피드에서 제거
 
-## 11. 반응형 및 애니메이션
+## 12. 반응형 및 애니메이션
 
 - [x] 반응형 브레이크포인트 적용
   - [x] Mobile (< 768px): BottomNav, Header 표시
@@ -301,7 +326,7 @@
   - [x] Skeleton UI (PostCardSkeleton)
   - [x] Shimmer 효과
 
-## 12. 에러 핸들링 및 최적화
+## 13. 에러 핸들링 및 최적화
 
 - [x] 에러 핸들링
   - [x] API 에러 처리
@@ -334,7 +359,7 @@
     - [x] PostModal: 이전/다음 게시물 계산 메모이제이션
     - [x] PostFeed: fetchPosts 함수 useCallback 유지
 
-## 13. 최종 마무리
+## 14. 최종 마무리
 
 - [x] 모바일/태블릿 반응형 테스트
   - [x] 다양한 화면 크기에서 테스트
