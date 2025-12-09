@@ -62,7 +62,7 @@ export async function GET(
     // users 테이블에서 추가 정보 조회 (created_at 등)
     const { data: user, error: userError } = await supabase
       .from('users')
-      .select('id, clerk_id, name, created_at')
+      .select('id, clerk_id, name, profile_image_url, created_at')
       .eq('id', userId)
       .single();
 
