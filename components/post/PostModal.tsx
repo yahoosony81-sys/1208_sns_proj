@@ -108,31 +108,6 @@ export default function PostModal({
   // 현재 postId를 상태로 관리 (이전/다음 게시물 네비게이션용)
   const [currentPostId, setCurrentPostId] = useState(postId);
 
-  // postId가 변경되면 currentPostId 업데이트
-  useEffect(() => {
-    if (postId !== currentPostId && open) {
-      setCurrentPostId(postId);
-    }
-  }, [postId, open, currentPostId]);
-
-  // currentPostId가 변경되면 게시물 로드
-  useEffect(() => {
-    if (open && currentPostId && currentPostId !== post?.id) {
-      loadPost();
-    }
-  }, [currentPostId, open, post?.id, loadPost]);
-
-  // 이전/다음 게시물 계산 (메모이제이션)
-  const { previousPost, nextPost } = useMemo(() => {
-    const currentIndex = feedPosts.findIndex((p) => p.id === currentPostId);
-    const prev = currentIndex > 0 ? feedPosts[currentIndex - 1] : null;
-    const next =
-      currentIndex >= 0 && currentIndex < feedPosts.length - 1
-        ? feedPosts[currentIndex + 1]
-        : null;
-    return { previousPost: prev, nextPost: next };
-  }, [feedPosts, currentPostId]);
-
   // 게시물 상세 정보 로드
   const loadPost = useCallback(async () => {
     if (!currentPostId) return;
@@ -165,6 +140,20 @@ export default function PostModal({
       setIsLoading(false);
     }
   }, [currentPostId]);
+
+  // postId가 변경되면 currentPostId 업데이트
+  useEffect(() => {
+    if (postId !== currentPostId && open) {
+      setCurrentPostId(postId);
+    }
+  }, [postId, open, currentPostId]);
+
+  // currentPostId가 변경되면 게시물 로드
+  useEffect(() => {
+    if (open && currentPostId && currentPostId !== post?.id) {
+      loadPost();
+    }
+  }, [currentPostId, open, post?.id, loadPost]);
 
   // 모달이 열릴 때 게시물 로드
   useEffect(() => {
