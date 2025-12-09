@@ -213,3 +213,6 @@ export async function apiDelete<T = any>(
   });
 }
 
+// Re-export error utilities for convenience
+export { isNetworkError, NetworkError, type ApiError } from './errors';
+

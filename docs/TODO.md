@@ -4,25 +4,24 @@
   - [ ] `dir.md` 프로젝트 디렉토리 구조
 - [ ] `.github/` 디렉토리
 - [ ] `.husky/` 디렉토리
-- [ ] `app/` 디렉토리
-  - [ ] `favicon.ico` 파일
-  - [ ] `not-found.tsx` 파일
-  - [ ] `robots.ts` 파일
-  - [ ] `sitemap.ts` 파일
-  - [ ] `manifest.ts` 파일
-- [ ] `supabase/` 디렉토리
-- [ ] `public/` 디렉토리
-  - [ ] `icons/` 디렉토리
-  - [ ] `logo.png` 파일
-  - [ ] `og-image.png` 파일
-- [ ] `tsconfig.json` 파일
-- [ ] `.cursorignore` 파일
-- [ ] `.gitignore` 파일
-- [ ] `.prettierignore` 파일
-- [ ] `.prettierrc` 파일
-- [ ] `tsconfig.json` 파일
-- [ ] `eslint.config.mjs` 파일
-- [ ] `AGENTS.md` 파일
+- [x] `app/` 디렉토리
+  - [x] `favicon.ico` 파일
+  - [x] `not-found.tsx` 파일
+  - [x] `robots.ts` 파일
+  - [x] `sitemap.ts` 파일
+  - [x] `manifest.ts` 파일
+- [x] `supabase/` 디렉토리
+- [x] `public/` 디렉토리
+  - [x] `icons/` 디렉토리
+  - [x] `logo.png` 파일
+  - [x] `og-image.png` 파일
+- [x] `tsconfig.json` 파일
+- [x] `.cursorignore` 파일
+- [x] `.gitignore` 파일
+- [x] `.prettierignore` 파일
+- [x] `.prettierrc` 파일
+- [x] `eslint.config.mjs` 파일
+- [x] `AGENTS.md` 파일
 
 
 # 📋 Mini Instagram - 개발 TODO 리스트
@@ -37,11 +36,11 @@
   - [x] `verify_database.sql` 검증 스크립트 생성 완료
   - [x] 검증 가이드 문서 생성 완료 (`docs/VERIFY_DATABASE.md`)
   - [x] 마이그레이션 적용 가이드 생성 완료 (`docs/MIGRATION_APPLY_GUIDE.md`)
-  - [ ] `db.sql` 파일을 Supabase에 적용 (수동 작업 필요)
+  - [x] `db.sql` 파일을 Supabase에 적용 (수동 작업 완료)
     - 📖 [적용 가이드](./MIGRATION_APPLY_GUIDE.md) 참고
-  - [ ] 테이블 생성 확인 (users, posts, likes, comments, follows) - 검증 스크립트 사용
+  - [x] 테이블 생성 확인 (users, posts, likes, comments, follows) - 검증 스크립트 사용
     - `verify_database.sql` 실행하여 자동 검증
-  - [ ] Views 및 Triggers 확인 - 검증 스크립트 사용
+  - [x] Views 및 Triggers 확인 - 검증 스크립트 사용
     - `verify_database.sql` 실행하여 자동 검증
   - 📖 [마이그레이션 가이드](./setup-migration-guide.md) 참고
   - 📖 [검증 가이드](./VERIFY_DATABASE.md) 참고
@@ -49,8 +48,9 @@
   - [x] `setup_posts_storage.sql` 파일 생성 완료 (정책 중복 방지 포함)
   - [x] 업로드 정책 설정 완료 (SELECT, INSERT, DELETE, UPDATE 정책 5개)
   - [x] 검증 쿼리 포함
-  - [ ] `posts` 버킷 생성 (공개 읽기) - Supabase Dashboard에서 적용 필요
-  - 📖 [마이그레이션 가이드](./setup-migration-guide.md) 참고
+  - [x] `posts` 버킷 생성 (공개 읽기) - Supabase Dashboard에서 적용 완료
+    - 📖 [상세 가이드](./SUPABASE_STORAGE_BUCKET_SETUP_GUIDE.md) - 단계별 버킷 생성 방법
+    - 📖 [마이그레이션 가이드](./setup-migration-guide.md) 참고
 - [x] TypeScript 타입 정의
   - [x] `lib/types.ts` 파일 생성
   - [x] User, Post, Like, Comment, Follow 타입 정의

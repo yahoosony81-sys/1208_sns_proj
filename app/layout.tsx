@@ -19,13 +19,37 @@ const geistMono = Geist_Mono({
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: "SaaS 템플릿",
-  description: "Next.js + Clerk + Supabase 보일러플레이트",
+  title: "Mini Instagram",
+  description: "Instagram 스타일 SNS 애플리케이션",
   viewport: {
     width: 'device-width',
     initialScale: 1,
     maximumScale: 5,
     userScalable: true,
+  },
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/icons/icon-192x192.png',
+  },
+  manifest: '/manifest.json',
+  openGraph: {
+    title: 'Mini Instagram',
+    description: 'Instagram 스타일 SNS 애플리케이션',
+    type: 'website',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Mini Instagram',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Mini Instagram',
+    description: 'Instagram 스타일 SNS 애플리케이션',
+    images: ['/og-image.png'],
   },
 };
 
