@@ -214,26 +214,40 @@
 
 ## 8. 프로필 페이지
 
-- [ ] `app/(main)/profile/[userId]/page.tsx`
-  - [ ] 동적 라우트 생성
-  - [ ] ProfileHeader 통합
-  - [ ] PostGrid 통합
-- [ ] `components/profile/ProfileHeader.tsx`
-  - [ ] 프로필 이미지 (150px Desktop / 90px Mobile)
-  - [ ] 사용자명
-  - [ ] 통계 (게시물 수, 팔로워 수, 팔로잉 수)
-  - [ ] "팔로우" / "팔로잉" 버튼 (다른 사람 프로필)
-  - [ ] "프로필 편집" 버튼 (본인 프로필, 1차 제외)
-- [ ] `components/profile/PostGrid.tsx`
-  - [ ] 3열 그리드 레이아웃 (반응형)
-  - [ ] 1:1 정사각형 썸네일
-  - [ ] Hover 시 좋아요/댓글 수 표시
-  - [ ] 클릭 시 게시물 상세 모달 열기
-- [ ] `app/api/users/[userId]/route.ts`
-  - [ ] GET: 사용자 정보 조회
-  - [ ] user_stats 뷰 활용
-- [ ] Sidebar "프로필" 버튼 연결
-  - [ ] `/profile`로 리다이렉트 (본인 프로필)
+- [x] `app/(main)/profile/[userId]/page.tsx`
+  - [x] 동적 라우트 생성
+  - [x] ProfileHeader 통합
+  - [x] PostGrid 통합
+  - [x] Server Component로 데이터 페칭
+  - [x] 에러 처리 (notFound)
+- [x] `app/(main)/profile/page.tsx`
+  - [x] 본인 프로필 리다이렉트 페이지
+  - [x] Clerk 사용자 ID 조회 후 `/profile/[userId]`로 리다이렉트
+- [x] `components/profile/ProfileHeader.tsx`
+  - [x] 프로필 이미지 (150px Desktop / 90px Mobile)
+  - [x] 사용자명
+  - [x] 통계 (게시물 수, 팔로워 수, 팔로잉 수)
+  - [x] "팔로우" / "팔로잉" 버튼 (다른 사람 프로필, UI만)
+  - [x] "프로필 편집" 버튼 (본인 프로필, UI만)
+  - [x] Desktop/Mobile 반응형 레이아웃
+- [x] `components/profile/PostGrid.tsx`
+  - [x] 3열 그리드 레이아웃 (반응형: Desktop 3열, Tablet 2열, Mobile 1열)
+  - [x] 1:1 정사각형 썸네일
+  - [x] Hover 시 좋아요/댓글 수 표시
+  - [x] 클릭 시 게시물 상세 모달 열기 (PostModal 재사용)
+  - [x] 게시물 없을 때 빈 상태 UI
+- [x] `app/api/users/[userId]/route.ts`
+  - [x] GET: 사용자 정보 조회
+  - [x] user_stats 뷰 활용
+  - [x] 팔로우 관계 확인
+  - [x] 본인 프로필 여부 확인
+- [x] Sidebar/BottomNav "프로필" 버튼 연결
+  - [x] `/profile`로 리다이렉트 (본인 프로필)
+  - [x] `/profile` 페이지에서 자동으로 `/profile/[userId]`로 리다이렉트
+- [x] 로딩 상태 및 에러 처리
+  - [x] `app/(main)/profile/[userId]/loading.tsx` 생성 (Skeleton UI)
+  - [x] `app/not-found.tsx` 생성 (커스텀 404 페이지)
+  - [x] 사용자 없음 에러 처리
 
 ## 9. 팔로우 기능
 
