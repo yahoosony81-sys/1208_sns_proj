@@ -18,6 +18,7 @@
 
 import { useState, memo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import FollowButton from '@/components/profile/FollowButton';
 import EditProfileModal from '@/components/profile/EditProfileModal';
