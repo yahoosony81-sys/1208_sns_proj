@@ -16,7 +16,9 @@
 
 'use client';
 
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import FollowButton from '@/components/profile/FollowButton';
 import type { User } from '@/lib/types';
 
 interface ProfileHeaderProps {
@@ -34,10 +36,26 @@ interface ProfileHeaderProps {
 export default function ProfileHeader({
   userId,
   user,
-  stats,
+  stats: initialStats,
   isOwnProfile,
-  isFollowing = false,
+  isFollowing: initialIsFollowing = false,
 }: ProfileHeaderProps) {
+  // 팔로우 상태 및 통계를 로컬 상태로 관리 (낙관적 업데이트)
+  const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
+  const [stats, setStats] = useState(initialStats);
+
+  // 팔로우 상태 변경 핸들러
+  const handleFollowToggle = (newState: boolean) => {
+    setIsFollowing(newState);
+    // 팔로우 통계 업데이트
+    setStats((prev) => ({
+      ...prev,
+      followers_count: newState
+        ? prev.followers_count + 1
+        : prev.followers_count - 1,
+    }));
+  };
+
   return (
     <div className="w-full">
       {/* Desktop: 가로 레이아웃 */}
@@ -66,17 +84,11 @@ export default function ProfileHeader({
                 프로필 편집
               </Button>
             ) : (
-              <Button
-                variant={isFollowing ? 'outline' : 'default'}
-                className={`px-4 py-1.5 text-sm font-semibold ${
-                  isFollowing
-                    ? 'border-instagram-border hover:bg-gray-50 text-instagram-text-primary'
-                    : 'bg-instagram-blue hover:bg-instagram-blue/90 text-white'
-                }`}
-                disabled
-              >
-                {isFollowing ? '팔로잉' : '팔로우'}
-              </Button>
+              <FollowButton
+                followingId={userId}
+                isFollowing={isFollowing}
+                onToggle={handleFollowToggle}
+              />
             )}
           </div>
 
@@ -160,17 +172,12 @@ export default function ProfileHeader({
               프로필 편집
             </Button>
           ) : (
-            <Button
-              variant={isFollowing ? 'outline' : 'default'}
-              className={`w-full px-4 py-1.5 text-sm font-semibold ${
-                isFollowing
-                  ? 'border-instagram-border hover:bg-gray-50 text-instagram-text-primary'
-                  : 'bg-instagram-blue hover:bg-instagram-blue/90 text-white'
-              }`}
-              disabled
-            >
-              {isFollowing ? '팔로잉' : '팔로우'}
-            </Button>
+            <FollowButton
+              followingId={userId}
+              isFollowing={isFollowing}
+              onToggle={handleFollowToggle}
+              className="w-full"
+            />
           )}
         </div>
       </div>
