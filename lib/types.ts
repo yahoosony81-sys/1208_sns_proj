@@ -116,6 +116,7 @@ export interface PostWithUser extends Post {
   likes_count: number;
   comments_count: number;
   is_liked: boolean; // 현재 사용자가 좋아요를 눌렀는지 여부
+  preview_comments?: CommentWithUser[]; // 최신 댓글 2개 (선택사항)
 }
 
 /**

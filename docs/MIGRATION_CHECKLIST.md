@@ -104,3 +104,4 @@ WHERE id IN ('uploads', 'posts');
 
 다음 단계: [TODO.md](../docs/TODO.md)의 "## 2. 레이아웃 구조" 작업을 시작하세요.
 
+

@@ -140,3 +140,4 @@ Supabase Dashboard에서 다음을 확인:
 - `supabase/migrations/setup_posts_storage.sql` - Storage 버킷 설정
 - `docs/setup-migration-guide.md` - 마이그레이션 적용 가이드
 
+

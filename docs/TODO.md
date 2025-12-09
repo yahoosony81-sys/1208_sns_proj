@@ -80,57 +80,84 @@
 
 ## 3. 홈 피드 페이지
 
-- [ ] `app/(main)/page.tsx` 생성
-  - [ ] PostFeed 컴포넌트 통합
-  - [ ] 배경색 #FAFAFA 설정
-- [ ] `components/post/PostCard.tsx`
-  - [ ] 헤더 (프로필 이미지 32px, 사용자명, 시간, ⋯ 메뉴)
-  - [ ] 이미지 영역 (1:1 정사각형)
-  - [ ] 액션 버튼 (좋아요, 댓글, 공유, 북마크)
-  - [ ] 좋아요 수 표시
-  - [ ] 캡션 (사용자명 Bold + 내용, 2줄 초과 시 "... 더 보기")
-  - [ ] 댓글 미리보기 (최신 2개)
-- [ ] `components/post/PostCardSkeleton.tsx`
-  - [ ] 로딩 UI (Skeleton + Shimmer 효과)
-- [ ] `components/post/PostFeed.tsx`
-  - [ ] 게시물 목록 렌더링
-  - [ ] 무한 스크롤 (Intersection Observer)
-  - [ ] 페이지네이션 (10개씩)
-- [ ] `app/api/posts/route.ts`
-  - [ ] GET: 게시물 목록 조회 (시간 역순 정렬)
-  - [ ] 페이지네이션 지원 (limit, offset)
-  - [ ] userId 파라미터 지원 (프로필 페이지용)
+- [x] `app/(main)/page.tsx` 생성
+  - [x] PostFeed 컴포넌트 통합
+  - [x] 배경색 #FAFAFA 설정 (layout.tsx의 bg-instagram-background)
+- [x] `components/post/PostCard.tsx`
+  - [x] 헤더 (프로필 이미지 32px, 사용자명, 시간, ⋯ 메뉴)
+  - [x] 이미지 영역 (1:1 정사각형)
+  - [x] 액션 버튼 (좋아요, 댓글, 공유, 북마크)
+  - [x] 좋아요 수 표시
+  - [x] 캡션 (사용자명 Bold + 내용, 2줄 초과 시 "... 더 보기")
+  - [x] 댓글 미리보기 (최신 2개 표시)
+  - [x] 더블탭 좋아요 기능 (모바일, 큰 하트 fade in/out)
+  - [x] 좋아요 버튼 클릭 애니메이션 (scale 1.3 → 1, 0.15초)
+  - [x] 좋아요 API 연동 (실제 좋아요 추가/제거)
+- [x] `components/post/PostCardSkeleton.tsx`
+  - [x] 로딩 UI (Skeleton + Shimmer 효과)
+- [x] `components/post/PostFeed.tsx`
+  - [x] 게시물 목록 렌더링
+  - [x] 무한 스크롤 (Intersection Observer)
+  - [x] 페이지네이션 (10개씩)
+  - [x] 에러 처리 및 로딩 상태 관리
+- [x] `app/api/posts/route.ts`
+  - [x] GET: 게시물 목록 조회 (시간 역순 정렬)
+  - [x] 페이지네이션 지원 (limit, offset)
+  - [x] userId 파라미터 지원 (프로필 페이지용)
+  - [x] 사용자 정보 및 통계 포함 (좋아요 수, 댓글 수, 좋아요 상태)
+  - [x] 최신 댓글 2개 포함 (preview_comments)
 
 ## 4. 좋아요 기능
 
-- [ ] `app/api/likes/route.ts`
-  - [ ] POST: 좋아요 추가
-  - [ ] DELETE: 좋아요 제거
-  - [ ] 인증 검증 (Clerk)
-- [ ] `components/post/LikeButton.tsx`
-  - [ ] 빈 하트 ↔ 빨간 하트 상태 관리
-  - [ ] 클릭 애니메이션 (scale 1.3 → 1)
-  - [ ] 더블탭 좋아요 (모바일, 큰 하트 fade in/out)
-- [ ] PostCard에 LikeButton 통합
-  - [ ] 좋아요 상태 표시
-  - [ ] 좋아요 수 실시간 업데이트
+- [x] `app/api/likes/route.ts`
+  - [x] POST: 좋아요 추가
+  - [x] DELETE: 좋아요 제거
+  - [x] 인증 검증 (Clerk)
+  - [x] 중복 좋아요 방지
+- [x] PostCard에 좋아요 기능 통합
+  - [x] 빈 하트 ↔ 빨간 하트 상태 관리
+  - [x] 클릭 애니메이션 (scale 1.3 → 1, 0.15초)
+  - [x] 더블탭 좋아요 (모바일, 큰 하트 fade in/out)
+  - [x] 좋아요 상태 표시
+  - [x] 좋아요 수 실시간 업데이트
+  - [x] 낙관적 업데이트 (Optimistic Update)
 
 ## 5. 게시물 작성
 
-- [ ] `components/post/CreatePostModal.tsx`
-  - [ ] Dialog 컴포넌트 사용
-  - [ ] 이미지 미리보기 UI
-  - [ ] 텍스트 입력 필드 (최대 2,200자)
-  - [ ] 파일 선택 버튼
-  - [ ] 업로드 버튼
-- [ ] `app/api/posts/route.ts`
-  - [ ] POST: 게시물 생성
-  - [ ] 이미지 파일 검증 (최대 5MB)
-  - [ ] Supabase Storage 업로드
-  - [ ] posts 테이블에 데이터 저장
-  - [ ] 인증 검증 (Clerk)
-- [ ] Sidebar "만들기" 버튼 연결
-  - [ ] CreatePostModal 열기
+📖 [상세 개발 계획](./PLAN_POST_CREATE.md) 참고
+
+- [x] `components/post/CreatePostModal.tsx`
+  - [x] Dialog 컴포넌트 사용
+  - [x] 이미지 미리보기 UI (1:1 정사각형)
+  - [x] 텍스트 입력 필드 (최대 2,200자)
+  - [x] 파일 선택 버튼
+  - [x] 업로드 버튼
+  - [x] 파일 크기 검증 (최대 5MB)
+  - [x] 파일 형식 검증 (JPEG, PNG, WebP)
+  - [x] 글자 수 카운터
+  - [x] 로딩 상태 표시
+  - [x] 에러 메시지 표시
+  - [x] 이미지 제거 기능
+- [x] `app/api/posts/route.ts`
+  - [x] POST: 게시물 생성
+  - [x] 이미지 파일 검증 (최대 5MB)
+  - [x] MIME 타입 검증 (image/jpeg, image/png, image/webp)
+  - [x] Supabase Storage 업로드 (posts 버킷)
+  - [x] 파일 경로: `{clerk_user_id}/{timestamp}-{random}.{ext}`
+  - [x] posts 테이블에 데이터 저장
+  - [x] 인증 검증 (Clerk)
+  - [x] 에러 처리 (401, 400, 500)
+  - [x] 업로드 실패 시 파일 자동 삭제
+- [x] Sidebar "만들기" 버튼 연결
+  - [x] CreatePostModal 열기
+  - [x] 로그인하지 않은 사용자 → 로그인 페이지 리다이렉트
+  - [x] Desktop/Tablet/Mobile 모두 지원
+- [x] BottomNav "만들기" 버튼 연결
+  - [x] CreatePostModal 열기
+  - [x] 로그인하지 않은 사용자 → 로그인 페이지 리다이렉트
+- [x] 업로드 후 피드 새로고침
+  - [x] 업로드 성공 시 페이지 새로고침 또는 홈으로 이동
+  - [x] 모달 자동 닫기 및 상태 초기화
 
 ## 6. 댓글 기능
 
