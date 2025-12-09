@@ -54,6 +54,10 @@
 - [x] TypeScript 타입 정의
   - [x] `lib/types.ts` 파일 생성
   - [x] User, Post, Like, Comment, Follow 타입 정의
+  - [x] User 타입에 `profile_image_url` 필드 추가
+- [x] 프로필 이미지 마이그레이션
+  - [x] `supabase/migrations/20250101000000_add_profile_image_url.sql` 생성
+  - [x] Supabase에 마이그레이션 적용 완료
 
 ## 2. 레이아웃 구조
 
@@ -227,9 +231,16 @@
   - [x] 프로필 이미지 (150px Desktop / 90px Mobile)
   - [x] 사용자명
   - [x] 통계 (게시물 수, 팔로워 수, 팔로잉 수)
-  - [x] "팔로우" / "팔로잉" 버튼 (다른 사람 프로필, UI만)
-  - [x] "프로필 편집" 버튼 (본인 프로필, UI만)
+  - [x] "팔로우" / "팔로잉" 버튼 (다른 사람 프로필)
+  - [x] "프로필 편집" 버튼 (본인 프로필)
   - [x] Desktop/Mobile 반응형 레이아웃
+- [x] 프로필 편집 기능
+  - [x] `components/profile/EditProfileModal.tsx` 생성
+  - [x] 사용자 이름 수정 기능
+  - [x] 프로필 이미지 업로드 기능
+  - [x] `app/api/users/[userId]/route.ts` PUT 엔드포인트 구현
+  - [x] 프로필 이미지 표시 (ProfileHeader, PostCard)
+  - [x] 데이터베이스 마이그레이션 (`20250101000000_add_profile_image_url.sql`) 적용 완료
 - [x] `components/profile/PostGrid.tsx`
   - [x] 3열 그리드 레이아웃 (반응형: Desktop 3열, Tablet 2열, Mobile 1열)
   - [x] 1:1 정사각형 썸네일
@@ -238,6 +249,7 @@
   - [x] 게시물 없을 때 빈 상태 UI
 - [x] `app/api/users/[userId]/route.ts`
   - [x] GET: 사용자 정보 조회
+  - [x] PUT: 사용자 정보 업데이트 (이름, 프로필 이미지)
   - [x] user_stats 뷰 활용
   - [x] 팔로우 관계 확인
   - [x] 본인 프로필 여부 확인
