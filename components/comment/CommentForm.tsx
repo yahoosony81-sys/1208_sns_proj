@@ -17,7 +17,7 @@
 
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, memo } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
@@ -29,7 +29,7 @@ interface CommentFormProps {
   onSuccess?: (comment: CommentWithUser) => void;
 }
 
-export default function CommentForm({ postId, onSuccess }: CommentFormProps) {
+function CommentForm({ postId, onSuccess }: CommentFormProps) {
   const { isSignedIn } = useUser();
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -130,4 +130,6 @@ export default function CommentForm({ postId, onSuccess }: CommentFormProps) {
     </div>
   );
 }
+
+export default memo(CommentForm);
 

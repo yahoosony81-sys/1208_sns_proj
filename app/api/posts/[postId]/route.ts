@@ -17,6 +17,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { createClient } from '@/lib/supabase/server';
 import { getServiceRoleClient } from '@/lib/supabase/service-role';
+import { getErrorMessage, getSupabaseErrorMessage, logError } from '@/lib/errors';
 import type { PostWithUser, CommentWithUser } from '@/lib/types';
 
 const STORAGE_BUCKET = 'posts';
@@ -64,9 +65,10 @@ export async function GET(
       .single();
 
     if (postError || !post) {
-      console.error('Error fetching post:', postError);
+      logError(postError, 'GET /api/posts/[postId] - Fetch post');
+      const errorMessage = postError ? getSupabaseErrorMessage(postError) : '게시물을 찾을 수 없습니다.';
       return NextResponse.json(
-        { error: '게시물을 찾을 수 없습니다.' },
+        { error: errorMessage },
         { status: 404 }
       );
     }
@@ -79,7 +81,7 @@ export async function GET(
       .single();
 
     if (statsError) {
-      console.error('Error fetching stats:', statsError);
+      logError(statsError, 'GET /api/posts/[postId] - Fetch stats');
       // 통계 조회 실패해도 게시물은 반환
     }
 
@@ -129,7 +131,7 @@ export async function GET(
       .order('created_at', { ascending: false });
 
     if (commentsError) {
-      console.error('Error fetching comments:', commentsError);
+      logError(commentsError, 'GET /api/posts/[postId] - Fetch comments');
       // 댓글 조회 실패해도 게시물은 반환
     }
 
@@ -190,7 +192,7 @@ export async function DELETE(
 
     if (!postId) {
       return NextResponse.json(
-        { error: '게시물 ID가 필요합니다.' },
+        { error: getErrorMessage(400, '게시물 ID가 필요합니다.') },
         { status: 400 }
       );
     }
@@ -199,7 +201,7 @@ export async function DELETE(
 
     if (!clerkUserId) {
       return NextResponse.json(
-        { error: '인증이 필요합니다.' },
+        { error: getErrorMessage(401) },
         { status: 401 }
       );
     }
@@ -214,9 +216,10 @@ export async function DELETE(
       .single();
 
     if (userError || !currentUser) {
-      console.error('Error finding user:', userError);
+      logError(userError, 'DELETE /api/posts/[postId] - Find user');
+      const errorMessage = userError ? getSupabaseErrorMessage(userError) : '사용자를 찾을 수 없습니다.';
       return NextResponse.json(
-        { error: '사용자를 찾을 수 없습니다.' },
+        { error: errorMessage },
         { status: 404 }
       );
     }
@@ -229,8 +232,9 @@ export async function DELETE(
       .single();
 
     if (postError || !post) {
+      const errorMessage = postError ? getSupabaseErrorMessage(postError) : '게시물을 찾을 수 없습니다.';
       return NextResponse.json(
-        { error: '게시물을 찾을 수 없습니다.' },
+        { error: errorMessage },
         { status: 404 }
       );
     }
@@ -238,7 +242,7 @@ export async function DELETE(
     // 본인 게시물인지 확인
     if (post.user_id !== currentUser.id) {
       return NextResponse.json(
-        { error: '본인이 작성한 게시물만 삭제할 수 있습니다.' },
+        { error: getErrorMessage(403, '본인이 작성한 게시물만 삭제할 수 있습니다.') },
         { status: 403 }
       );
     }
@@ -268,11 +272,11 @@ export async function DELETE(
           .remove([filePath]);
 
         if (storageError) {
-          console.error('Error deleting image from storage:', storageError);
+          logError(storageError, 'DELETE /api/posts/[postId] - Delete image from storage');
           // Storage 삭제 실패해도 게시물은 삭제 진행 (에러 로그만 기록)
         }
       } catch (storageError) {
-        console.error('Error deleting image from storage:', storageError);
+        logError(storageError, 'DELETE /api/posts/[postId] - Delete image from storage (catch)');
         // Storage 삭제 실패해도 게시물은 삭제 진행
       }
     }
@@ -285,18 +289,19 @@ export async function DELETE(
       .eq('user_id', currentUser.id);
 
     if (deleteError) {
-      console.error('Error deleting post:', deleteError);
+      logError(deleteError, 'DELETE /api/posts/[postId] - Delete post');
+      const errorMessage = getSupabaseErrorMessage(deleteError);
       return NextResponse.json(
-        { error: '게시물을 삭제하는데 실패했습니다.' },
+        { error: errorMessage || '게시물을 삭제하는데 실패했습니다.' },
         { status: 500 }
       );
     }
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
-    console.error('Unexpected error:', error);
+    logError(error, 'DELETE /api/posts/[postId]');
     return NextResponse.json(
-      { error: '서버 오류가 발생했습니다.' },
+      { error: getErrorMessage(500) },
       { status: 500 }
     );
   }

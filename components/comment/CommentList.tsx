@@ -17,7 +17,7 @@
 
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, memo } from 'react';
 import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import type { CommentWithUser } from '@/lib/types';
@@ -64,7 +64,7 @@ interface CommentListProps {
   showDeleteButton?: boolean; // 본인 댓글만 삭제 버튼 표시
 }
 
-export default function CommentList({
+function CommentList({
   comments,
   onDelete,
   showDeleteButton = true,
@@ -157,4 +157,6 @@ export default function CommentList({
     </div>
   );
 }
+
+export default memo(CommentList);
 

@@ -18,6 +18,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import PostCard from './PostCard';
 import PostCardSkeleton from './PostCardSkeleton';
+import { apiGet, isNetworkError } from '@/lib/api-client';
 import type { PostWithUser } from '@/lib/types';
 
 const POSTS_PER_PAGE = 10;
@@ -34,27 +35,35 @@ export default function PostFeed() {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(
-        `/api/posts?limit=${POSTS_PER_PAGE}&offset=${offset}`
-      );
+      const result = await apiGet<{
+        posts: PostWithUser[];
+        hasMore: boolean;
+        total: number;
+      }>(`/api/posts?limit=${POSTS_PER_PAGE}&offset=${offset}`, {
+        retries: 1,
+        retryDelay: 1000,
+      });
 
-      if (!response.ok) {
-        throw new Error('게시물을 불러오는데 실패했습니다.');
+      if (!result.success || !result.data) {
+        const errorMessage = result.error?.message || '게시물을 불러오는데 실패했습니다.';
+        setError(errorMessage);
+        return;
       }
-
-      const data = await response.json();
 
       if (offset === 0) {
-        setPosts(data.posts);
+        setPosts(result.data.posts);
       } else {
-        setPosts((prev) => [...prev, ...data.posts]);
+        setPosts((prev) => [...prev, ...result.data.posts]);
       }
 
-      setHasMore(data.hasMore);
+      setHasMore(result.data.hasMore);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.'
-      );
+      const errorMessage = isNetworkError(err)
+        ? '네트워크 연결을 확인해주세요.'
+        : err instanceof Error
+          ? err.message
+          : '알 수 없는 오류가 발생했습니다.';
+      setError(errorMessage);
       console.error('Error fetching posts:', err);
     } finally {
       setLoading(false);

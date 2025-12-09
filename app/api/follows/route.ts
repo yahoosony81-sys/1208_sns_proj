@@ -16,6 +16,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { createClient } from '@/lib/supabase/server';
+import { getErrorMessage, getSupabaseErrorMessage, logError } from '@/lib/errors';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,7 +33,7 @@ export async function POST(request: NextRequest) {
 
     if (!clerkUserId) {
       return NextResponse.json(
-        { error: '인증이 필요합니다.' },
+        { error: getErrorMessage(401) },
         { status: 401 }
       );
     }
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest) {
 
     if (!followingId) {
       return NextResponse.json(
-        { error: '팔로우할 사용자 ID가 필요합니다.' },
+        { error: getErrorMessage(400, '팔로우할 사용자 ID가 필요합니다.') },
         { status: 400 }
       );
     }
@@ -57,9 +58,10 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (userError || !currentUser) {
-      console.error('Error finding user:', userError);
+      logError(userError, 'POST /api/follows - Find user');
+      const errorMessage = userError ? getSupabaseErrorMessage(userError) : '사용자를 찾을 수 없습니다.';
       return NextResponse.json(
-        { error: '사용자를 찾을 수 없습니다.' },
+        { error: errorMessage },
         { status: 404 }
       );
     }
@@ -67,7 +69,7 @@ export async function POST(request: NextRequest) {
     // 자기 자신 팔로우 방지
     if (currentUser.id === followingId) {
       return NextResponse.json(
-        { error: '자기 자신을 팔로우할 수 없습니다.' },
+        { error: getErrorMessage(400, '자기 자신을 팔로우할 수 없습니다.') },
         { status: 400 }
       );
     }
@@ -80,8 +82,9 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (followingUserError || !followingUser) {
+      const errorMessage = followingUserError ? getSupabaseErrorMessage(followingUserError) : '팔로우할 사용자를 찾을 수 없습니다.';
       return NextResponse.json(
-        { error: '팔로우할 사용자를 찾을 수 없습니다.' },
+        { error: errorMessage },
         { status: 404 }
       );
     }
@@ -96,7 +99,7 @@ export async function POST(request: NextRequest) {
 
     if (existingFollow) {
       return NextResponse.json(
-        { error: '이미 팔로우 중입니다.' },
+        { error: getErrorMessage(409, '이미 팔로우 중입니다.') },
         { status: 409 }
       );
     }
@@ -112,34 +115,19 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (followError) {
-      // UNIQUE 제약조건 위반 (중복 팔로우)
-      if (followError.code === '23505') {
-        return NextResponse.json(
-          { error: '이미 팔로우 중입니다.' },
-          { status: 409 }
-        );
-      }
-
-      // CHECK 제약조건 위반 (자기 자신 팔로우)
-      if (followError.code === '23514') {
-        return NextResponse.json(
-          { error: '자기 자신을 팔로우할 수 없습니다.' },
-          { status: 400 }
-        );
-      }
-
-      console.error('Error creating follow:', followError);
+      logError(followError, 'POST /api/follows - Create follow');
+      const errorMessage = getSupabaseErrorMessage(followError);
       return NextResponse.json(
-        { error: '팔로우를 추가하는데 실패했습니다.' },
+        { error: errorMessage || '팔로우를 추가하는데 실패했습니다.' },
         { status: 500 }
       );
     }
 
     return NextResponse.json({ success: true, follow }, { status: 201 });
   } catch (error) {
-    console.error('Unexpected error:', error);
+    logError(error, 'POST /api/follows');
     return NextResponse.json(
-      { error: '서버 오류가 발생했습니다.' },
+      { error: getErrorMessage(500) },
       { status: 500 }
     );
   }
@@ -158,7 +146,7 @@ export async function DELETE(request: NextRequest) {
 
     if (!clerkUserId) {
       return NextResponse.json(
-        { error: '인증이 필요합니다.' },
+        { error: getErrorMessage(401) },
         { status: 401 }
       );
     }
@@ -168,7 +156,7 @@ export async function DELETE(request: NextRequest) {
 
     if (!followingId) {
       return NextResponse.json(
-        { error: '언팔로우할 사용자 ID가 필요합니다.' },
+        { error: getErrorMessage(400, '언팔로우할 사용자 ID가 필요합니다.') },
         { status: 400 }
       );
     }
@@ -183,9 +171,10 @@ export async function DELETE(request: NextRequest) {
       .single();
 
     if (userError || !currentUser) {
-      console.error('Error finding user:', userError);
+      logError(userError, 'DELETE /api/follows - Find user');
+      const errorMessage = userError ? getSupabaseErrorMessage(userError) : '사용자를 찾을 수 없습니다.';
       return NextResponse.json(
-        { error: '사용자를 찾을 수 없습니다.' },
+        { error: errorMessage },
         { status: 404 }
       );
     }
@@ -198,18 +187,19 @@ export async function DELETE(request: NextRequest) {
       .eq('following_id', followingId);
 
     if (deleteError) {
-      console.error('Error deleting follow:', deleteError);
+      logError(deleteError, 'DELETE /api/follows - Delete follow');
+      const errorMessage = getSupabaseErrorMessage(deleteError);
       return NextResponse.json(
-        { error: '팔로우를 제거하는데 실패했습니다.' },
+        { error: errorMessage || '팔로우를 제거하는데 실패했습니다.' },
         { status: 500 }
       );
     }
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
-    console.error('Unexpected error:', error);
+    logError(error, 'DELETE /api/follows');
     return NextResponse.json(
-      { error: '서버 오류가 발생했습니다.' },
+      { error: getErrorMessage(500) },
       { status: 500 }
     );
   }

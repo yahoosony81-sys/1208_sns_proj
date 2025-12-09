@@ -291,16 +291,36 @@
 
 ## 12. 에러 핸들링 및 최적화
 
-- [ ] 에러 핸들링
-  - [ ] API 에러 처리
-  - [ ] 사용자 친화적 에러 메시지
-  - [ ] 네트워크 에러 처리
-- [ ] 이미지 최적화
-  - [ ] Next.js Image 컴포넌트 사용
-  - [ ] Lazy loading
-- [ ] 성능 최적화
-  - [ ] React.memo 적용 (필요한 컴포넌트)
-  - [ ] useMemo, useCallback 활용
+- [x] 에러 핸들링
+  - [x] API 에러 처리
+    - [x] `lib/errors.ts` 생성: 에러 타입 정의 및 메시지 매핑 함수
+    - [x] `lib/api-client.ts` 생성: fetch 래퍼 함수 및 네트워크 에러 처리
+    - [x] 모든 API 라우트에 공통 에러 처리 적용 (posts, likes, comments, follows, users)
+  - [x] 사용자 친화적 에러 메시지
+    - [x] HTTP 상태 코드별 메시지 매핑
+    - [x] Supabase 에러 타입별 구체적 메시지 제공
+  - [x] 네트워크 에러 처리
+    - [x] 네트워크 에러 자동 감지 및 처리
+    - [x] 재시도 로직 (선택적)
+    - [x] 타임아웃 처리
+  - [x] 전역 에러 바운더리
+    - [x] `components/ErrorBoundary.tsx` 생성
+- [x] 이미지 최적화
+  - [x] Next.js Image 컴포넌트 사용 (이미 적용됨)
+  - [x] Lazy loading
+    - [x] `next.config.ts` 수정: Supabase Storage 도메인 추가 및 이미지 최적화 설정
+    - [x] PostCard, PostGrid에 lazy loading 적용
+- [x] 성능 최적화
+  - [x] React.memo 적용 (필요한 컴포넌트)
+    - [x] PostCard
+    - [x] CommentList
+    - [x] CommentForm
+    - [x] PostGrid
+    - [x] ProfileHeader
+  - [x] useMemo, useCallback 활용
+    - [x] PostCard: 시간 포맷팅, 캡션 처리 메모이제이션
+    - [x] PostModal: 이전/다음 게시물 계산 메모이제이션
+    - [x] PostFeed: fetchPosts 함수 useCallback 유지
 
 ## 13. 최종 마무리
 

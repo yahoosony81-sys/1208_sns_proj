@@ -17,7 +17,7 @@
 
 'use client';
 
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, memo, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -69,10 +69,12 @@ interface PostCardProps {
   feedPosts?: PostWithUser[]; // 이전/다음 게시물 네비게이션용 (선택사항)
 }
 
-export default function PostCard({ post, feedPosts = [] }: PostCardProps) {
-  const timeAgo = formatTimeAgo(post.created_at);
+function PostCard({ post, feedPosts = [] }: PostCardProps) {
   const router = useRouter();
   const { user } = useUser();
+  
+  // 시간 포맷팅 메모이제이션
+  const timeAgo = useMemo(() => formatTimeAgo(post.created_at), [post.created_at]);
 
   // 모달 상태 관리
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -120,12 +122,19 @@ export default function PostCard({ post, feedPosts = [] }: PostCardProps) {
     }
   }, [isMenuOpen]);
 
-  // 캡션 처리: 2줄 초과 시 "... 더 보기" 표시
-  const captionLines = post.caption?.split('\n') || [];
-  const showMore = captionLines.length > 2 || (post.caption && post.caption.length > 100);
-  const displayCaption = showMore
-    ? post.caption?.substring(0, 100) + '...'
-    : post.caption;
+  // 캡션 처리: 2줄 초과 시 "... 더 보기" 표시 (메모이제이션)
+  const { captionLines, showMore, displayCaption } = useMemo(() => {
+    const lines = post.caption?.split('\n') || [];
+    const shouldShowMore = lines.length > 2 || (post.caption && post.caption.length > 100);
+    const display = shouldShowMore
+      ? post.caption?.substring(0, 100) + '...'
+      : post.caption || '';
+    return {
+      captionLines: lines,
+      showMore: shouldShowMore,
+      displayCaption: display,
+    };
+  }, [post.caption]);
 
   // 좋아요 토글 처리
   const handleLike = useCallback(async () => {
@@ -359,6 +368,7 @@ export default function PostCard({ post, feedPosts = [] }: PostCardProps) {
           className="object-cover"
           sizes="(max-width: 768px) 100vw, 630px"
           priority={false}
+          loading="lazy"
           draggable={false}
         />
         {/* 더블탭 큰 하트 애니메이션 */}
@@ -479,4 +489,6 @@ export default function PostCard({ post, feedPosts = [] }: PostCardProps) {
     </article>
   );
 }
+
+export default memo(PostCard);
 

@@ -20,6 +20,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { createClient } from '@/lib/supabase/server';
+import { getErrorMessage, getSupabaseErrorMessage, logError } from '@/lib/errors';
 import type { CommentWithUser } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -38,7 +39,7 @@ export async function POST(request: NextRequest) {
 
     if (!clerkUserId) {
       return NextResponse.json(
-        { error: '인증이 필요합니다.' },
+        { error: getErrorMessage(401) },
         { status: 401 }
       );
     }
@@ -48,7 +49,7 @@ export async function POST(request: NextRequest) {
 
     if (!postId || !content) {
       return NextResponse.json(
-        { error: '게시물 ID와 댓글 내용이 필요합니다.' },
+        { error: getErrorMessage(400, '게시물 ID와 댓글 내용이 필요합니다.') },
         { status: 400 }
       );
     }
@@ -57,7 +58,7 @@ export async function POST(request: NextRequest) {
     const trimmedContent = content.trim();
     if (trimmedContent.length === 0) {
       return NextResponse.json(
-        { error: '댓글 내용을 입력해주세요.' },
+        { error: getErrorMessage(400, '댓글 내용을 입력해주세요.') },
         { status: 400 }
       );
     }
@@ -72,9 +73,10 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (userError || !user) {
-      console.error('Error finding user:', userError);
+      logError(userError, 'POST /api/comments - Find user');
+      const errorMessage = userError ? getSupabaseErrorMessage(userError) : '사용자를 찾을 수 없습니다.';
       return NextResponse.json(
-        { error: '사용자를 찾을 수 없습니다.' },
+        { error: errorMessage },
         { status: 404 }
       );
     }
@@ -87,8 +89,9 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (postError || !post) {
+      const errorMessage = postError ? getSupabaseErrorMessage(postError) : '게시물을 찾을 수 없습니다.';
       return NextResponse.json(
-        { error: '게시물을 찾을 수 없습니다.' },
+        { error: errorMessage },
         { status: 404 }
       );
     }
@@ -105,9 +108,10 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (commentError) {
-      console.error('Error creating comment:', commentError);
+      logError(commentError, 'POST /api/comments - Create comment');
+      const errorMessage = getSupabaseErrorMessage(commentError);
       return NextResponse.json(
-        { error: '댓글 작성에 실패했습니다.' },
+        { error: errorMessage || '댓글 작성에 실패했습니다.' },
         { status: 500 }
       );
     }
@@ -156,7 +160,7 @@ export async function DELETE(request: NextRequest) {
 
     if (!clerkUserId) {
       return NextResponse.json(
-        { error: '인증이 필요합니다.' },
+        { error: getErrorMessage(401) },
         { status: 401 }
       );
     }
@@ -166,7 +170,7 @@ export async function DELETE(request: NextRequest) {
 
     if (!commentId) {
       return NextResponse.json(
-        { error: '댓글 ID가 필요합니다.' },
+        { error: getErrorMessage(400, '댓글 ID가 필요합니다.') },
         { status: 400 }
       );
     }
@@ -181,9 +185,10 @@ export async function DELETE(request: NextRequest) {
       .single();
 
     if (userError || !user) {
-      console.error('Error finding user:', userError);
+      logError(userError, 'DELETE /api/comments - Find user');
+      const errorMessage = userError ? getSupabaseErrorMessage(userError) : '사용자를 찾을 수 없습니다.';
       return NextResponse.json(
-        { error: '사용자를 찾을 수 없습니다.' },
+        { error: errorMessage },
         { status: 404 }
       );
     }
@@ -196,8 +201,9 @@ export async function DELETE(request: NextRequest) {
       .single();
 
     if (commentError || !comment) {
+      const errorMessage = commentError ? getSupabaseErrorMessage(commentError) : '댓글을 찾을 수 없습니다.';
       return NextResponse.json(
-        { error: '댓글을 찾을 수 없습니다.' },
+        { error: errorMessage },
         { status: 404 }
       );
     }
@@ -205,7 +211,7 @@ export async function DELETE(request: NextRequest) {
     // 본인이 작성한 댓글인지 확인
     if (comment.user_id !== user.id) {
       return NextResponse.json(
-        { error: '본인이 작성한 댓글만 삭제할 수 있습니다.' },
+        { error: getErrorMessage(403, '본인이 작성한 댓글만 삭제할 수 있습니다.') },
         { status: 403 }
       );
     }
@@ -218,18 +224,19 @@ export async function DELETE(request: NextRequest) {
       .eq('user_id', user.id);
 
     if (deleteError) {
-      console.error('Error deleting comment:', deleteError);
+      logError(deleteError, 'DELETE /api/comments - Delete comment');
+      const errorMessage = getSupabaseErrorMessage(deleteError);
       return NextResponse.json(
-        { error: '댓글 삭제에 실패했습니다.' },
+        { error: errorMessage || '댓글 삭제에 실패했습니다.' },
         { status: 500 }
       );
     }
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
-    console.error('Unexpected error:', error);
+    logError(error, 'DELETE /api/comments');
     return NextResponse.json(
-      { error: '서버 오류가 발생했습니다.' },
+      { error: getErrorMessage(500) },
       { status: 500 }
     );
   }

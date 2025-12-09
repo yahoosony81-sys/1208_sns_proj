@@ -15,6 +15,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { createClient } from '@/lib/supabase/server';
+import { getErrorMessage, getSupabaseErrorMessage, logError } from '@/lib/errors';
 
 export const dynamic = 'force-dynamic';
 
@@ -56,9 +57,10 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (userError || !user) {
-      console.error('Error finding user:', userError);
+      logError(userError, 'POST /api/likes - Find user');
+      const errorMessage = userError ? getSupabaseErrorMessage(userError) : '사용자를 찾을 수 없습니다.';
       return NextResponse.json(
-        { error: '사용자를 찾을 수 없습니다.' },
+        { error: errorMessage },
         { status: 404 }
       );
     }
@@ -71,8 +73,9 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (postError || !post) {
+      const errorMessage = postError ? getSupabaseErrorMessage(postError) : '게시물을 찾을 수 없습니다.';
       return NextResponse.json(
-        { error: '게시물을 찾을 수 없습니다.' },
+        { error: errorMessage },
         { status: 404 }
       );
     }
@@ -87,7 +90,7 @@ export async function POST(request: NextRequest) {
 
     if (existingLike) {
       return NextResponse.json(
-        { error: '이미 좋아요를 눌렀습니다.' },
+        { error: getErrorMessage(400, '이미 좋아요를 눌렀습니다.') },
         { status: 400 }
       );
     }
@@ -103,18 +106,19 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (likeError) {
-      console.error('Error creating like:', likeError);
+      logError(likeError, 'POST /api/likes - Create like');
+      const errorMessage = getSupabaseErrorMessage(likeError);
       return NextResponse.json(
-        { error: '좋아요를 추가하는데 실패했습니다.' },
+        { error: errorMessage || '좋아요를 추가하는데 실패했습니다.' },
         { status: 500 }
       );
     }
 
     return NextResponse.json({ success: true, like }, { status: 201 });
   } catch (error) {
-    console.error('Unexpected error:', error);
+    logError(error, 'POST /api/likes');
     return NextResponse.json(
-      { error: '서버 오류가 발생했습니다.' },
+      { error: getErrorMessage(500) },
       { status: 500 }
     );
   }
@@ -158,9 +162,10 @@ export async function DELETE(request: NextRequest) {
       .single();
 
     if (userError || !user) {
-      console.error('Error finding user:', userError);
+      logError(userError, 'DELETE /api/likes - Find user');
+      const errorMessage = userError ? getSupabaseErrorMessage(userError) : '사용자를 찾을 수 없습니다.';
       return NextResponse.json(
-        { error: '사용자를 찾을 수 없습니다.' },
+        { error: errorMessage },
         { status: 404 }
       );
     }
@@ -173,18 +178,19 @@ export async function DELETE(request: NextRequest) {
       .eq('user_id', user.id);
 
     if (deleteError) {
-      console.error('Error deleting like:', deleteError);
+      logError(deleteError, 'DELETE /api/likes - Delete like');
+      const errorMessage = getSupabaseErrorMessage(deleteError);
       return NextResponse.json(
-        { error: '좋아요를 제거하는데 실패했습니다.' },
+        { error: errorMessage || '좋아요를 제거하는데 실패했습니다.' },
         { status: 500 }
       );
     }
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
-    console.error('Unexpected error:', error);
+    logError(error, 'DELETE /api/likes');
     return NextResponse.json(
-      { error: '서버 오류가 발생했습니다.' },
+      { error: getErrorMessage(500) },
       { status: 500 }
     );
   }

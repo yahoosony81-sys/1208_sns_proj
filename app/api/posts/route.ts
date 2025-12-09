@@ -21,6 +21,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { createClient } from '@/lib/supabase/server';
+import { getErrorMessage, getSupabaseErrorMessage, logError } from '@/lib/errors';
 import type { PostWithUser, CommentWithUser } from '@/lib/types';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -70,9 +71,10 @@ export async function GET(request: NextRequest) {
     const { data: posts, error: postsError } = await query;
 
     if (postsError) {
-      console.error('Error fetching posts:', postsError);
+      logError(postsError, 'GET /api/posts - Fetch posts');
+      const errorMessage = getSupabaseErrorMessage(postsError);
       return NextResponse.json(
-        { error: '게시물을 불러오는데 실패했습니다.' },
+        { error: errorMessage },
         { status: 500 }
       );
     }
@@ -91,7 +93,7 @@ export async function GET(request: NextRequest) {
       .in('post_id', postIds);
 
     if (statsError) {
-      console.error('Error fetching stats:', statsError);
+      logError(statsError, 'GET /api/posts - Fetch stats');
       // 통계 조회 실패해도 게시물은 반환
     }
 
@@ -145,7 +147,7 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: false });
 
     if (commentsError) {
-      console.error('Error fetching comments:', commentsError);
+      logError(commentsError, 'GET /api/posts - Fetch comments');
       // 댓글 조회 실패해도 게시물은 반환
     }
 
@@ -242,9 +244,10 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (userError || !user) {
-      console.error('Error finding user:', userError);
+      logError(userError, 'POST /api/posts - Find user');
+      const errorMessage = userError ? getSupabaseErrorMessage(userError) : '사용자를 찾을 수 없습니다.';
       return NextResponse.json(
-        { error: '사용자를 찾을 수 없습니다.' },
+        { error: errorMessage },
         { status: 404 }
       );
     }
@@ -257,7 +260,7 @@ export async function POST(request: NextRequest) {
     // 이미지 파일 검증
     if (!imageFile) {
       return NextResponse.json(
-        { error: '이미지 파일이 필요합니다.' },
+        { error: getErrorMessage(400, '이미지 파일이 필요합니다.') },
         { status: 400 }
       );
     }
@@ -265,23 +268,23 @@ export async function POST(request: NextRequest) {
     // 파일 크기 검증
     if (imageFile.size > MAX_FILE_SIZE) {
       return NextResponse.json(
-        { error: '파일 크기는 5MB 이하여야 합니다.' },
-        { status: 400 }
+        { error: getErrorMessage(413, '파일 크기는 5MB 이하여야 합니다.') },
+        { status: 413 }
       );
     }
 
     // MIME 타입 검증
     if (!ALLOWED_MIME_TYPES.includes(imageFile.type)) {
       return NextResponse.json(
-        { error: 'JPEG, PNG, WebP 파일만 업로드 가능합니다.' },
-        { status: 400 }
+        { error: getErrorMessage(415, 'JPEG, PNG, WebP 파일만 업로드 가능합니다.') },
+        { status: 415 }
       );
     }
 
     // 캡션 검증
     if (caption && caption.length > 2200) {
       return NextResponse.json(
-        { error: '캡션은 최대 2,200자까지 입력 가능합니다.' },
+        { error: getErrorMessage(400, '캡션은 최대 2,200자까지 입력 가능합니다.') },
         { status: 400 }
       );
     }
@@ -304,9 +307,10 @@ export async function POST(request: NextRequest) {
       });
 
     if (uploadError) {
-      console.error('Error uploading to storage:', uploadError);
+      logError(uploadError, 'POST /api/posts - Upload image');
+      const errorMessage = getSupabaseErrorMessage(uploadError);
       return NextResponse.json(
-        { error: '이미지 업로드에 실패했습니다.' },
+        { error: errorMessage || '이미지 업로드에 실패했습니다.' },
         { status: 500 }
       );
     }
@@ -328,11 +332,12 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (postError) {
-      console.error('Error creating post:', postError);
+      logError(postError, 'POST /api/posts - Create post');
       // 업로드된 파일 삭제 시도 (실패해도 계속 진행)
       await supabase.storage.from(STORAGE_BUCKET).remove([filePath]);
+      const errorMessage = getSupabaseErrorMessage(postError);
       return NextResponse.json(
-        { error: '게시물 저장에 실패했습니다.' },
+        { error: errorMessage || '게시물 저장에 실패했습니다.' },
         { status: 500 }
       );
     }

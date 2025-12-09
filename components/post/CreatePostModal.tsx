@@ -21,6 +21,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { X, Upload, Image as ImageIcon } from 'lucide-react';
+import { isNetworkError } from '@/lib/api-client';
 import {
   Dialog,
   DialogContent,
@@ -147,7 +148,8 @@ export default function CreatePostModal({
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || '게시물 업로드에 실패했습니다.');
+        const errorMessage = data.error || '게시물 업로드에 실패했습니다.';
+        throw new Error(errorMessage);
       }
 
       // 성공 시 모달 닫기 및 상태 초기화
@@ -156,9 +158,12 @@ export default function CreatePostModal({
       onOpenChange(false);
       onSuccess?.();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : '게시물 업로드에 실패했습니다.'
-      );
+      const errorMessage = isNetworkError(err)
+        ? '네트워크 연결을 확인해주세요.'
+        : err instanceof Error
+          ? err.message
+          : '게시물 업로드에 실패했습니다.';
+      setError(errorMessage);
       console.error('Error uploading post:', err);
     } finally {
       setIsUploading(false);

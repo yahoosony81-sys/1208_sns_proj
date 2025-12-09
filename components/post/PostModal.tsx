@@ -19,7 +19,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -121,13 +121,16 @@ export default function PostModal({
     }
   }, [currentPostId, open, post?.id, loadPost]);
 
-  // 이전/다음 게시물 계산
-  const currentIndex = feedPosts.findIndex((p) => p.id === currentPostId);
-  const previousPost = currentIndex > 0 ? feedPosts[currentIndex - 1] : null;
-  const nextPost =
-    currentIndex >= 0 && currentIndex < feedPosts.length - 1
-      ? feedPosts[currentIndex + 1]
-      : null;
+  // 이전/다음 게시물 계산 (메모이제이션)
+  const { previousPost, nextPost } = useMemo(() => {
+    const currentIndex = feedPosts.findIndex((p) => p.id === currentPostId);
+    const prev = currentIndex > 0 ? feedPosts[currentIndex - 1] : null;
+    const next =
+      currentIndex >= 0 && currentIndex < feedPosts.length - 1
+        ? feedPosts[currentIndex + 1]
+        : null;
+    return { previousPost: prev, nextPost: next };
+  }, [feedPosts, currentPostId]);
 
   // 게시물 상세 정보 로드
   const loadPost = useCallback(async () => {

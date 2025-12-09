@@ -17,7 +17,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import Image from 'next/image';
 import { Heart, MessageCircle } from 'lucide-react';
 import PostModal from '@/components/post/PostModal';
@@ -28,7 +28,7 @@ interface PostGridProps {
   posts: PostWithUser[];
 }
 
-export default function PostGrid({ userId, posts }: PostGridProps) {
+function PostGrid({ userId, posts }: PostGridProps) {
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -91,6 +91,7 @@ export default function PostGrid({ userId, posts }: PostGridProps) {
               fill
               className="object-cover"
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              loading="lazy"
               draggable={false}
             />
 
@@ -129,4 +130,6 @@ export default function PostGrid({ userId, posts }: PostGridProps) {
     </>
   );
 }
+
+export default memo(PostGrid);
 

@@ -16,7 +16,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { Button } from '@/components/ui/button';
 import FollowButton from '@/components/profile/FollowButton';
 import type { User } from '@/lib/types';
@@ -33,7 +33,7 @@ interface ProfileHeaderProps {
   isFollowing?: boolean; // 다른 사람 프로필일 때만
 }
 
-export default function ProfileHeader({
+function ProfileHeader({
   userId,
   user,
   stats: initialStats,
@@ -184,4 +184,6 @@ export default function ProfileHeader({
     </div>
   );
 }
+
+export default memo(ProfileHeader);
 

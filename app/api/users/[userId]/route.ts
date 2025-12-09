@@ -16,6 +16,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { createClient } from '@/lib/supabase/server';
+import { getErrorMessage, getSupabaseErrorMessage, logError } from '@/lib/errors';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,7 +36,7 @@ export async function GET(
 
     if (!userId) {
       return NextResponse.json(
-        { error: '사용자 ID가 필요합니다.' },
+        { error: getErrorMessage(400, '사용자 ID가 필요합니다.') },
         { status: 400 }
       );
     }
@@ -50,9 +51,10 @@ export async function GET(
       .single();
 
     if (statsError || !userStats) {
-      console.error('Error fetching user stats:', statsError);
+      logError(statsError, 'GET /api/users/[userId] - Fetch user stats');
+      const errorMessage = statsError ? getSupabaseErrorMessage(statsError) : '사용자를 찾을 수 없습니다.';
       return NextResponse.json(
-        { error: '사용자를 찾을 수 없습니다.' },
+        { error: errorMessage },
         { status: 404 }
       );
     }
@@ -65,9 +67,10 @@ export async function GET(
       .single();
 
     if (userError || !user) {
-      console.error('Error fetching user:', userError);
+      logError(userError, 'GET /api/users/[userId] - Fetch user');
+      const errorMessage = userError ? getSupabaseErrorMessage(userError) : '사용자를 찾을 수 없습니다.';
       return NextResponse.json(
-        { error: '사용자를 찾을 수 없습니다.' },
+        { error: errorMessage },
         { status: 404 }
       );
     }
@@ -121,9 +124,9 @@ export async function GET(
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error('Unexpected error:', error);
+    logError(error, 'GET /api/users/[userId]');
     return NextResponse.json(
-      { error: '서버 오류가 발생했습니다.' },
+      { error: getErrorMessage(500) },
       { status: 500 }
     );
   }
